@@ -4,6 +4,7 @@ import { ModelBase } from "../AllModels";
 export enum SenderType {
   User,
   Bot,
+  Introduction,
 }
 
 export type FlowMessage = {
