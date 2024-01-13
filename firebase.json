@@ -1,0 +1,44 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": {
+    "runtime": "nodejs20",
+    "predeploy": "npm run build-functions",
+    "source": ".",
+    "ignore": [
+      "**/node_modules/**",
+      "**/firestore-debug.log",
+      "**/.artifact_output/**",
+      "**/.next/**",
+      "**/.git/**",
+      "**/.vercel/**",
+      "**/private_configs/**",
+      "**/app/**",
+      "**/firebase/**",
+      "**/functions/**",
+      ".cache"
+    ]
+  },
+  "emulators": {
+    "auth": {
+      "port": 9089
+    },
+    "functions": {
+      "port": 5002
+    },
+    "firestore": {
+      "port": 8071
+    },
+    "storage": {
+      "port": 9189
+    },
+    "ui": {
+      "enabled": true
+    }
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
