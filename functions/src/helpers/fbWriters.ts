@@ -75,7 +75,7 @@ export const fbUpdate = async <
 
 export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
   collectionName: Key,
-  data: CollectionNameToModelType[Key],
+  data: Partial<CollectionNameToModelType[Key]>,
   opts?: CreateOptions
 ) => {
   const firestore = getBeFirestore();

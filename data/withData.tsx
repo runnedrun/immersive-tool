@@ -24,7 +24,7 @@ export const withData = <
 >(
   dataFn: DataFnType<DataType, ParamsType, StaticProps>,
   Component: (
-    props: { data: DataWithStatics<DataType> } & StaticProps
+    props: { data: DataWithStatics<DataType>; params: ParamsType } & StaticProps
   ) => JSX.Element
 ): ComponentWithInitialValues<
   DataWithoutStatics<DataType>,
@@ -64,6 +64,7 @@ export const withData = <
 
     return (
       <Component
+        params={props.params}
         data={{ ...resolvedData, ...statics }}
         {...withoutInitialData}
       />

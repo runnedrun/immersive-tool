@@ -2,6 +2,7 @@ import { CollectionNameToModelType } from "@/models/AllModels";
 import {
   PartialWithFieldValue,
   Timestamp,
+  collection,
   deleteDoc,
   doc,
   setDoc,
@@ -75,14 +76,15 @@ export const fbUpdate = async <
 
 export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
   collectionName: Key,
-  data: CollectionNameToModelType[Key],
+  data: Partial<CollectionNameToModelType[Key]>,
   opts?: CreateOptions
 ) => {
   const { db } = initFb();
 
   const ref = opts?.id
     ? doc(db, collectionName, opts.id)
-    : doc(db, collectionName);
+    : doc(collection(db, collectionName));
+
   await setDoc(
     ref,
     {

@@ -41,13 +41,13 @@ export const readDoc = async <
 >(
   collectionName: CollectionName,
   id: string
-): Promise<CollectionNameToModelType[CollectionName] & ServerModelBase> => {
+): Promise<CollectionNameToModelType[CollectionName]> => {
   const { db } = initFb();
   const snap = await getDoc(doc(db, collectionName, id));
   return {
     ...snap.data(),
     uid: id,
-  } as CollectionNameToModelType[CollectionName] & ServerModelBase;
+  } as CollectionNameToModelType[CollectionName];
 };
 
 export const getObsForDoc = <
@@ -63,7 +63,7 @@ export const getObsForDoc = <
       return {
         uid: snap.id,
         ...snap.data(),
-      } as CollectionNameToModelType[CollectionName] & ServerModelBase;
+      } as CollectionNameToModelType[CollectionName];
     })
   );
 };
@@ -73,7 +73,7 @@ export const queryDocs = async <
 >(
   collectionName: CollectionName,
   buildQuery: (ref: CollectionReference) => Query
-): Promise<(CollectionNameToModelType[CollectionName] & ServerModelBase)[]> => {
+): Promise<CollectionNameToModelType[CollectionName][]> => {
   const { db } = initFb();
   const ref = collection(db, collectionName);
   const query = buildQuery(ref);
@@ -84,6 +84,6 @@ export const queryDocs = async <
     return {
       ...doc.data(),
       uid: doc.id,
-    } as CollectionNameToModelType[CollectionName] & ServerModelBase;
+    } as CollectionNameToModelType[CollectionName];
   });
 };

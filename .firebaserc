@@ -1,7 +1,7 @@
 {
   "projects": {
     "default": "demo-immersive",
-    "staging": "xinqing-david-wedding-staging",
+    "staging": "immersive-b573e",
     "demo": "demo-immersive"
   },
   "targets": {}
