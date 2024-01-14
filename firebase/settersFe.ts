@@ -27,7 +27,8 @@ export const fbSet = async <
 >(
   collectionName: CollectionName,
   docId: string,
-  data: PartialWithFieldValue<CollectionNameToModelType[CollectionName]>
+  data: PartialWithFieldValue<CollectionNameToModelType[CollectionName]>,
+  { merge = true }: { merge?: boolean } = {}
 ) => {
   const { db } = initFb();
   const ref = doc(db, collectionName, docId);
@@ -38,7 +39,7 @@ export const fbSet = async <
       updatedAt: Timestamp.now(),
       ...data,
     },
-    { merge: true }
+    { merge }
   );
 
   return ref;

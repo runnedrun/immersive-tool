@@ -38,7 +38,12 @@ export const StepTemplateDisplay = ({ step }: { step: Step }) => {
         };
       }, {});
       if (!isEqual(variableDescriptions, existingVariableDescriptions)) {
-        fbSet("step", step.uid, { variableDescriptions });
+        fbSet(
+          "step",
+          step.uid,
+          { ...step, variableDescriptions },
+          { merge: false }
+        );
       }
     },
   });

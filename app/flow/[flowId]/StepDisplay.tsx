@@ -5,9 +5,13 @@ import { fbSet } from "@/firebase/settersFe";
 import { Field, Label } from "@/components/ui/fieldset";
 import { Step } from "@/models/types/Step";
 import { StepTemplateDisplay } from "./StepTemplateDisplay";
+import { Button } from "@/components/ui/button";
+import { TrashIcon } from "@heroicons/react/16/solid";
 
 export const StepDisplay = ({ step }: { step: Step }) => {
   const variableNames = Object.keys(step.variableDescriptions || {});
+  variableNames.sort();
+
   const variableDisplay = variableNames.length ? (
     variableNames.map((variableName) => {
       const variableValue = step.variableDescriptions[variableName];
@@ -36,21 +40,33 @@ export const StepDisplay = ({ step }: { step: Step }) => {
   return (
     <div className=" border-zinc-300 flex flex-col gap-2 p-2">
       <div className="text-lg">Step {(step.index || 0) + 1}</div>
+      <div>
+        <Field>
+          <Label>Title</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              className={"border-none"}
+              value={step.title || ""}
+              onChange={(e) => {
+                fbSet("step", step.uid, { title: e.target.value });
+              }}
+            ></Input>
+            <Button
+              color="red"
+              onClick={() => {
+                fbSet("step", step.uid, { archived: true });
+              }}
+            >
+              <TrashIcon></TrashIcon>
+            </Button>
+          </div>
+        </Field>
+      </div>
       <Field>
-        <Label>Title</Label>
-        <Input
-          className={"border-none"}
-          value={step.title || ""}
-          onChange={(e) => {
-            fbSet("step", step.uid, { title: e.target.value });
-          }}
-        ></Input>
-      </Field>
-      <Field>
-        <Label>Extra Instructions for AI (optional)</Label>
+        <Label>Extra Instructions for data collection (optional)</Label>
         <Textarea
           className={"border-none"}
-          value={step.title || ""}
+          value={step.aiIntro || ""}
           onChange={(e) => {
             fbSet("step", step.uid, { aiIntro: e.target.value });
           }}

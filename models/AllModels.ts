@@ -3,6 +3,7 @@ import { Flow } from "./types/Flow";
 import { Step } from "./types/Step";
 import { FlowMessage } from "./types/FlowMessage";
 import { FlowRun } from "./types/FlowRun";
+import { StepRun } from "./types/StepRun";
 
 export type ModelBase = {
   uid: string;
@@ -14,6 +15,7 @@ export type CollectionNameToModelType = {
   step: Step;
   flowMessage: FlowMessage;
   flowRun: FlowRun;
+  stepRun: StepRun;
 };
 
 export type AllModels = ValuesType<CollectionNameToModelType>;
@@ -23,4 +25,5 @@ export const collectionNames: (keyof CollectionNameToModelType)[] = [
   "step",
   "flowMessage",
   "flowRun",
+  "stepRun",
 ] as const;
