@@ -14,4 +14,5 @@ export type Step = {
   title: string;
   template: string;
   variableDescriptions: Record<string, string>;
+  aiIntro: string;
 } & ModelBase;

@@ -1,27 +1,80 @@
 "use client";
-import { withData } from "@/data/withData";
-import { flowDataFn } from "./flowDataFn";
-import { Input } from "@/components/ui/input";
-import { fbSet } from "@/firebase/settersFe";
 
-export const FlowDisplay = withData(flowDataFn, ({ data: { flow } }) => {
+import { Button } from "@/components/ui/button";
+import { Field, Label } from "@/components/ui/fieldset";
+import { Input } from "@/components/ui/input";
+import { withData } from "@/data/withData";
+import { fbCreate, fbSet } from "@/firebase/settersFe";
+import { PlusIcon } from "@heroicons/react/16/solid";
+import { StepDisplay } from "./StepDisplay";
+import { flowDataFn } from "./flowDataFn";
+
+export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
   return (
-    <div>
-      <div className="flex w-full justify-center">
-        <div className="bg-gray-200 p-3 text-lg">
-          <div>Flow:</div>
-          <div>
-            <Input
-              className={"border-none"}
-              value={flow.title || ""}
-              onChange={(e) => {
-                fbSet("flow", flow.uid, { title: e.target.value });
-              }}
-            ></Input>
+    <div className="flex w-full justify-center mt-10">
+      <div className="flex-col flex gap-6">
+        <div className="w-[30rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
+          <div className="text-lg w-full">
+            <div className="bg-gray-200 p-2 rounded-md">Flow:</div>
+            <div>
+              <Field>
+                <Label>Title</Label>
+                <Input
+                  className={"border-none"}
+                  value={flow.title || ""}
+                  onChange={(e) => {
+                    fbSet("flow", flow.uid, { title: e.target.value });
+                  }}
+                ></Input>
+              </Field>
+            </div>
+            <div>
+              <Field>
+                <Label>Description</Label>
+                <Input
+                  className={"border-none"}
+                  value={flow.description || ""}
+                  onChange={(e) => {
+                    fbSet("flow", flow.uid, { description: e.target.value });
+                  }}
+                ></Input>
+              </Field>
+            </div>
+            <div>
+              <Field>
+                <Label>Introduction Message</Label>
+                <Input
+                  className={"border-none"}
+                  value={flow.introductionMessage || ""}
+                  onChange={(e) => {
+                    fbSet("flow", flow.uid, {
+                      introductionMessage: e.target.value,
+                    });
+                  }}
+                ></Input>
+              </Field>
+            </div>
           </div>
         </div>
-        <div>
-          <div>Prompt</div>
+        <div className="w-[30rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
+          <div className="flex flex-col gap-3">
+            {steps.map((step) => {
+              return <StepDisplay key={step.uid} step={step}></StepDisplay>;
+            })}
+          </div>
+          <div>
+            <Button
+              onClick={() => {
+                fbCreate("step", {
+                  flowKey: flow.uid,
+                  title: "New Step",
+                  index: steps.length,
+                });
+              }}
+            >
+              <PlusIcon></PlusIcon> Step
+            </Button>
+          </div>
         </div>
       </div>
     </div>
