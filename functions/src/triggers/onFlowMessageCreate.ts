@@ -1,9 +1,11 @@
 import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { ChatCompletionMessage } from "openai/resources/index.mjs";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { getOpenAIClient } from "../ai/getOpenAIClient";
-import { queryDocs } from "../helpers/fbReaders";
+import { queryDocs, readDoc } from "../helpers/fbReaders";
 import { fbCreate } from "../helpers/fbWriters";
+import { Step } from "@/models/types/Step";
+import { FlowRun } from "@/models/types/FlowRun";
 
 const sendEmail = async (params: {
   to: string;
@@ -13,17 +15,31 @@ const sendEmail = async (params: {
   console.log("sendemail", params);
 };
 
-const getResponse = async (messages: FlowMessage[]) => {
-  const messagesForOpenAi = messages.map((message) => {
-    return {
-      role: message.senderType === SenderType.Bot ? "assistant" : "user",
-      content: message.text,
-    } as ChatCompletionMessage;
-  });
+const saveVariable = async (params: { variable: string; value: string }) => {
+  console.log("saveVariable", params);
+};
+
+const getResponse = async (
+  step: Step,
+  flowRun: FlowRun,
+  messages: FlowMessage[]
+) => {
+  const messagesForOpenAi = messages
+    .filter(({ senderType }) => senderType !== SenderType.Introduction)
+    .map((message) => {
+      return {
+        role: message.senderType === SenderType.Bot ? "assistant" : "user",
+        content: message.text,
+      } as ChatCompletionMessageParam;
+    });
+  const requiredInfoMsg = Object.entries(step.variableDescriptions)
+    .map(([variable, desc]) => `${variable}: ${desc}`)
+    .join("\n");
   messagesForOpenAi.push({
-    content: "You are a helpful assistant gathering information for a form.",
-    role: "assistant",
-  } as ChatCompletionMessage);
+    content: `You are a helpful assistant gathering information for a form. The information you need to gather is the following:
+${requiredInfoMsg}.\nStart off by prompting the user for the first piece of information.`,
+    role: "system",
+  } as ChatCompletionMessageParam);
   const reversedMessages = [...messagesForOpenAi].reverse();
 
   const client = getOpenAIClient();
@@ -48,6 +64,22 @@ const getResponse = async (messages: FlowMessage[]) => {
             },
           },
         },
+        {
+          type: "function",
+          function: {
+            function: saveVariable,
+            description:
+              "Save a variable to the database after retrieving it from the user",
+            parse: JSON.parse, // or use a validation library like zod for typesafe parsing.
+            parameters: {
+              type: "object",
+              properties: {
+                variable: { type: "string", description: "The variable name" },
+                value: { type: "string", description: "The variable value" },
+              },
+            },
+          },
+        },
       ],
     })
     .on("message", (message) => console.log("onmesaege", message));
@@ -66,7 +98,6 @@ export const onFlowMessageCreate = onDocumentCreated(
     cpu: 1,
   },
   async (change) => {
-    console.log("cHANGE", change);
     if (!change.data) {
       return;
     }
@@ -74,8 +105,7 @@ export const onFlowMessageCreate = onDocumentCreated(
       uid: change.data.id,
       ...change.data.data(),
     } as FlowMessage;
-    console.log("data", messageData);
-    if (messageData.senderType !== SenderType.User) {
+    if (messageData.senderType === SenderType.Bot) {
       return;
     }
 
@@ -84,10 +114,19 @@ export const onFlowMessageCreate = onDocumentCreated(
         .where("flowRunKey", "==", messageData.flowRunKey)
         .orderBy("createdAt", "desc");
     });
+    const steps = await queryDocs("step", (q) => {
+      return q.where("flowKey", "==", messageData.flowKey);
+    });
+    const flowRun = await readDoc("flowRun", messageData.flowRunKey);
+    const curStep = steps[flowRun.currentStepIndex];
+
+    if (!curStep) {
+      return;
+    }
 
     console.log("onFlowMessageCreate", messageData, allMessages.length);
 
-    const resp = await getResponse(allMessages);
+    const resp = await getResponse(curStep, flowRun, allMessages);
 
     console.log("resp", resp);
 

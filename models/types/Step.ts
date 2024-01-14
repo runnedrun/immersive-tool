@@ -12,4 +12,6 @@ export type Step = {
   index: number;
   flowKey: string;
   title: string;
+  template: string;
+  variableDescriptions: Record<string, string>;
 } & ModelBase;
