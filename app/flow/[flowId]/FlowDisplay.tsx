@@ -13,7 +13,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
   return (
     <div className="flex w-full justify-center mt-10">
       <div className="flex-col flex gap-6">
-        <div className="w-[30rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
+        <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
           <div className="text-lg w-full">
             <div className="bg-gray-200 p-2 rounded-md">Flow:</div>
             <div>
@@ -56,7 +56,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
             </div>
           </div>
         </div>
-        <div className="w-[30rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
+        <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
           <div className="flex flex-col gap-3">
             {steps.map((step) => {
               return <StepDisplay key={step.uid} step={step}></StepDisplay>;
@@ -69,6 +69,11 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                   flowKey: flow.uid,
                   title: "New Step",
                   index: steps.length,
+                  aiIntro: null,
+                  template: "",
+                  outputVariableDescriptions: null,
+                  responseDescription: null,
+                  variableDescriptions: null,
                 });
               }}
             >

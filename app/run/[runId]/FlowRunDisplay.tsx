@@ -7,6 +7,10 @@ import { fbCreate } from "@/firebase/settersFe";
 import { useState } from "react";
 import { flowRunDataFn } from "./flowRunDataFn";
 import { SenderType } from "@/models/types/FlowMessage";
+import {
+  triggerProcessForJobNameAndId,
+  triggerProcessOnWrite,
+} from "@/data/helpers/triggerProcessOnWrite";
 
 const NewFlowMessageTextBox = ({
   flowRunKey,
@@ -18,13 +22,18 @@ const NewFlowMessageTextBox = ({
   const [messageText, setMessageText] = useState("");
   return (
     <form
-      onSubmit={(e) => {
-        fbCreate("flowMessage", {
+      onSubmit={async (e) => {
+        await fbCreate("flowMessage", {
           flowRunKey,
           text: messageText,
           senderType: SenderType.User,
           flowKey,
+          processedForStepRunKey: null,
+          processedByStepRun: null,
+          processedForStep: null,
+          toolCallJSON: null,
         });
+        triggerProcessForJobNameAndId("flowRun", flowRunKey);
         setMessageText("");
         e.preventDefault();
 

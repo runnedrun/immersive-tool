@@ -8,7 +8,6 @@ let app = null as unknown as App;
 const projectName = defineString("PROJECT_NAME");
 
 const getBeApp = () => {
-  console.log("getBeApp", projectName.value());
   app =
     app ||
     initializeApp({

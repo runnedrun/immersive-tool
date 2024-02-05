@@ -1,15 +1,19 @@
 import batchPromises from "batch-promises";
-import { PartialWithFieldValue, Timestamp } from "firebase-admin/firestore";
+import {
+  DocumentReference,
+  PartialWithFieldValue,
+  Timestamp,
+} from "firebase-admin/firestore";
 import { Timestamp as FeTimestamp } from "firebase/firestore";
 import { chunk } from "lodash";
 import { getBeFirestore } from "./getBeFirestore";
-import { CollectionNameToModelType } from "@/models/AllModels";
+import { CollectionNameToModelType, ModelBase } from "@/models/AllModels";
 
 export type CreateOptions = {
   id?: string;
 };
 
-export const genExtraData = () => {
+export const genExtraData = (): Omit<ModelBase, "uid"> => {
   return {
     createdAt: Timestamp.now() as FeTimestamp,
     updatedAt: Timestamp.now() as FeTimestamp,
@@ -73,23 +77,28 @@ export const fbUpdate = async <
   return firestore.collection(collectionName).doc(docId);
 };
 
+type ExtendedRef<T> = DocumentReference & {
+  data: T;
+};
+
 export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
   collectionName: Key,
-  data: Partial<CollectionNameToModelType[Key]>,
+  data: Omit<CollectionNameToModelType[Key], keyof ModelBase>,
   opts?: CreateOptions
-) => {
+): Promise<ExtendedRef<CollectionNameToModelType[Key]>> => {
   const firestore = getBeFirestore();
   const ref = opts?.id
     ? firestore.collection(collectionName).doc(opts.id)
     : firestore.collection(collectionName).doc();
-  await ref.set(
-    {
-      ...genExtraData(),
-      ...data,
-    },
-    { merge: true }
-  );
-  return ref;
+
+  const dataToSet = {
+    ...genExtraData(),
+    ...data,
+  } as CollectionNameToModelType[Key];
+  await ref.set(dataToSet, { merge: true });
+  const typed = ref as ExtendedRef<CollectionNameToModelType[Key]>;
+  typed.data = { ...dataToSet, uid: ref.id } as CollectionNameToModelType[Key];
+  return typed;
 };
 
 export const fbBatchSet = async <

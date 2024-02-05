@@ -1,3 +1,4 @@
+import { triggerProcessOnWrite } from "@/data/helpers/triggerProcessOnWrite";
 import { readDoc } from "@/firebase/readerFe";
 import { fbCreate, fbSet } from "@/firebase/settersFe";
 import { SenderType } from "@/models/types/FlowMessage";
@@ -12,7 +13,7 @@ const StartFlow = async ({
   const flow = await readDoc("flow", flowId);
   const ref = await fbCreate("flowRun", {
     flowKey: flowId,
-    currentStepIndex: 0,
+    completedAt: null,
   });
   const flowRunId = ref.id;
   await fbCreate("flowMessage", {
@@ -20,7 +21,14 @@ const StartFlow = async ({
     flowKey: flowId,
     senderType: SenderType.Introduction,
     text: flow.introductionMessage,
+    processedForStepRunKey: null,
+    processedByStepRun: null,
+    processedForStep: null,
+    toolCallJSON: null,
   });
+
+  await triggerProcessOnWrite(Promise.resolve(ref));
+
   const url = `/run/${flowRunId}`;
   redirect(url);
 };

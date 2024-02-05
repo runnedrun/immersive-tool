@@ -1,5 +1,7 @@
-import { CollectionNameToModelType } from "@/models/AllModels";
+import { CollectionNameToModelType, ModelBase } from "@/models/AllModels";
 import {
+  DocumentData,
+  DocumentReference,
   PartialWithFieldValue,
   Timestamp,
   collection,
@@ -14,10 +16,10 @@ export type CreateOptions = {
   id?: string;
 };
 
-export const genExtraData = () => {
+export const genExtraData = (): Omit<ModelBase, "uid"> => {
   return {
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
+    createdAt: Timestamp.now() as any,
+    updatedAt: Timestamp.now() as any,
     archived: false,
   };
 };
@@ -75,24 +77,28 @@ export const fbUpdate = async <
   return ref;
 };
 
+export type ExtendedRef<T> = DocumentReference & {
+  data: T;
+};
+
 export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
   collectionName: Key,
-  data: Partial<CollectionNameToModelType[Key]>,
+  data: Omit<CollectionNameToModelType[Key], keyof ModelBase>,
   opts?: CreateOptions
-) => {
+): Promise<ExtendedRef<CollectionNameToModelType[Key]>> => {
   const { db } = initFb();
 
-  const ref = opts?.id
+  const ref: DocumentReference = opts?.id
     ? doc(db, collectionName, opts.id)
     : doc(collection(db, collectionName));
 
-  await setDoc(
-    ref,
-    {
-      ...genExtraData(),
-      ...data,
-    },
-    { merge: true }
-  );
-  return ref;
+  const dataToSave = {
+    ...genExtraData(),
+    ...data,
+  } as CollectionNameToModelType[Key];
+
+  await setDoc(ref, dataToSave, { merge: true });
+  const newRef = ref as ExtendedRef<CollectionNameToModelType[Key]>;
+  newRef.data = { ...dataToSave, uid: ref.id };
+  return newRef;
 };
