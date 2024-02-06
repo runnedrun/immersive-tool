@@ -11,6 +11,7 @@ import { CollectionNameToModelType, ModelBase } from "@/models/AllModels";
 
 export type CreateOptions = {
   id?: string;
+  createdAt?: Timestamp;
 };
 
 export const genExtraData = (): Omit<ModelBase, "uid"> => {
@@ -91,8 +92,11 @@ export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
     ? firestore.collection(collectionName).doc(opts.id)
     : firestore.collection(collectionName).doc();
 
+  const createdAtObj = opts?.createdAt ? { createdAt: opts.createdAt } : {};
+
   const dataToSet = {
     ...genExtraData(),
+    ...createdAtObj,
     ...data,
   } as CollectionNameToModelType[Key];
   await ref.set(dataToSet, { merge: true });

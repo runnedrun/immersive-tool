@@ -48,7 +48,9 @@ export const DebugMessageDisplay = withData(dataFn, ({ data: {}, message }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-bold">{SenderTypeNameMap[message.senderType]}</div>
+      <div className="font-bold text-sm">
+        {SenderTypeNameMap[message.senderType]}
+      </div>
       {fnResponseDisplay}
       {fnCallDisplay}
       {textDisplay}

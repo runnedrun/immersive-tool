@@ -1,10 +1,10 @@
-import { Timestamp } from "firebase/firestore";
 import { isUndefined } from "lodash";
 import { queryDocs, readDoc } from "../../helpers/fbReaders";
 import { fbCreate, fbSet } from "../../helpers/fbWriters";
 import { getMessagesForAi } from "./getMessagesForAi";
 import { processStepRun } from "./processStepRun";
 import { getStepRunId } from "@/models/types/StepRun";
+import { Timestamp } from "firebase-admin/firestore";
 
 let reRunsAllowed = 30;
 
@@ -82,7 +82,7 @@ export const processFlowRun = async (flowRunKey: string) => {
   const updatedMessagesWithStepKeyInfo = await Promise.all(
     messages.map(async (message) => {
       if (!message.processedForStep) {
-        message.processedByStepRun = currentStepRun!.uid;
+        message.processedForStepRunKey = currentStepRun!.uid;
         message.processedForStep = curStep.uid;
         await fbSet("flowMessage", message.uid, message);
       }
@@ -113,6 +113,7 @@ export const processFlowRun = async (flowRunKey: string) => {
     console.log("re-running flowKey", flowRunKey, "reRuns", reRuns);
     if (reRuns > reRunsAllowed) {
       console.error("Too many reRuns for flowRun:", flowRunKey);
+      return;
     }
     reRuns++;
     return processFlowRun(flowRunKey);
@@ -125,6 +126,8 @@ export const processFlowRun = async (flowRunKey: string) => {
     allVariablesFromPreviousSteps,
     reRunFlowRunProcessor: reRun,
   });
+
+  console.log("processFlowRun finished", flowRunKey);
 
   return false;
 };

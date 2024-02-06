@@ -33,6 +33,7 @@ export const getTextToSpeechFnSpec = (
         },
       },
     },
+    name: "textToSpeech",
   };
 };
 

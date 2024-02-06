@@ -34,38 +34,38 @@ export const runTools = async (
         : undefined,
     })
     .on("functionCall", (message) => {
-      const newMessage = {
-        flowRunKey: flowRunKey || null,
+      fbCreate("flowMessage", {
+        flowRunKey: flowRunKey,
         text: "",
         toolCallJSON: JSON.stringify(message),
         senderType: SenderType.ToolCall,
-        flowKey: flowKey || null,
-      } as FlowMessage;
-
-      fbCreate("flowMessage", newMessage);
+        flowKey: flowKey,
+        processedForStepRunKey: params.currentStepRun.uid,
+        processedForStep: params.currentStep.uid,
+      });
     })
     .on("functionCallResult", (message) => {
-      const newMessage = {
-        flowRunKey: flowRunKey || null,
+      fbCreate("flowMessage", {
+        flowRunKey: flowRunKey,
         text: message,
         senderType: SenderType.ToolResponse,
-        flowKey: flowKey || null,
-      } as FlowMessage;
-
-      fbCreate("flowMessage", newMessage);
+        flowKey: flowKey,
+        processedForStepRunKey: params.currentStepRun.uid,
+        processedForStep: params.currentStep.uid,
+      });
     });
 
   const respForUser = await runner.finalContent();
 
   if (respForUser) {
+    console.log("got resp for user", respForUser);
     await fbCreate("flowMessage", {
       flowRunKey: flowRunKey,
       text: respForUser || "no response",
       senderType: SenderType.Bot,
       flowKey: flowKey,
-      processedForStepRunKey: null,
-      processedByStepRun: null,
-      processedForStep: null,
+      processedForStepRunKey: params.currentStepRun.uid,
+      processedForStep: params.currentStep.uid,
       toolCallJSON: null,
     });
   }

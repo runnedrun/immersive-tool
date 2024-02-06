@@ -7,8 +7,8 @@ import {
   SenderType,
   getFlowMessageWithDefaults,
 } from "@/models/types/FlowMessage";
-import { fbCreate, fbSet } from "@/firebase/settersFe";
 import { replaceTemplate } from "./replaceTemplate";
+import { fbCreate } from "../../helpers/fbWriters";
 
 const getChatMessageForCompletedStepRun = ({
   currentStep,

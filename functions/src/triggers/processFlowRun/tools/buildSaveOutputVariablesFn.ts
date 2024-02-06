@@ -21,6 +21,7 @@ export const getSaveOutputVariablesFnSpec = (
 
   return {
     function: buildSaveOutputVariableFn(params),
+    name: "saveOutputVariables",
     description:
       "Save variables to the database based on the output of the most recent step",
     parse: JSON.parse, // or use a validation library like zod for typesafe parsing.
@@ -33,7 +34,6 @@ export const getSaveOutputVariablesFnSpec = (
 
 export const buildSaveOutputVariableFn = ({
   currentStepRun,
-  currentStep,
 }: ProcessStepParams) => {
   return async (params: SaveMultipleVariablesParams) => {
     const currentVariableValues = currentStepRun.variableValues;

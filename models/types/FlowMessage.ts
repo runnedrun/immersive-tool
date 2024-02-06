@@ -8,6 +8,8 @@ export enum SenderType {
   Bot,
   Introduction,
   System,
+  FlowIntroduction,
+  StepIntroduction,
   ToolCall,
   ToolResponse,
 }
@@ -31,7 +33,6 @@ export type FlowMessage = {
   flowKey: string;
   flowRunKey: string;
   processedForStepRunKey: string | null;
-  processedByStepRun?: string | null;
   processedForStep?: string | null;
   text: string;
   toolCallJSON?: null | string;

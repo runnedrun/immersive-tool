@@ -15,6 +15,7 @@ export const getInsertAudioFnSpec = (
 ): RunnableFunction<InsertAudioParams> => {
   return {
     function: buildTextToSpeechFn(params),
+    name: "insertAudio",
     description:
       "Get a link to a new file which is the result of inserting 'linkToAudioToInsert' into 'linkToOriginalAudio' at 'insertAtTimesstampMs' ms.",
     parse: JSON.parse,

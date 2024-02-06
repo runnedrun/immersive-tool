@@ -14,6 +14,7 @@ import { initFb } from "./initFb";
 
 export type CreateOptions = {
   id?: string;
+  createdAt?: Timestamp;
 };
 
 export const genExtraData = (): Omit<ModelBase, "uid"> => {
@@ -92,8 +93,11 @@ export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
     ? doc(db, collectionName, opts.id)
     : doc(collection(db, collectionName));
 
+  const createdAtObj = opts?.createdAt ? { createdAt: opts.createdAt } : {};
+
   const dataToSave = {
     ...genExtraData(),
+    ...createdAtObj,
     ...data,
   } as CollectionNameToModelType[Key];
 

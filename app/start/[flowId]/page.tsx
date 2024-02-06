@@ -7,8 +7,10 @@ import { redirect } from "next/navigation";
 
 const StartFlow = async ({
   params: { flowId },
+  searchParams: { debug },
 }: {
   params: { flowId: string };
+  searchParams: { debug: string };
 }) => {
   console.log("flowId", flowId);
   const flow = await readDoc("flow", flowId);
@@ -28,14 +30,14 @@ const StartFlow = async ({
     senderType: SenderType.Introduction,
     text: flow.introductionMessage,
     processedForStepRunKey: null,
-    processedByStepRun: null,
     processedForStep: null,
     toolCallJSON: null,
   });
 
   await triggerProcessOnWrite(Promise.resolve(ref));
+  console.log("DEBUG", debug);
 
-  const url = `/run/${flowRunId}`;
+  const url = debug ? `/run/${flowRunId}?debug=true` : `/run/${flowRunId}`;
   redirect(url);
 };
 

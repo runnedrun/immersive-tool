@@ -36,7 +36,6 @@ const NewFlowMessageTextBox = ({
           senderType: SenderType.User,
           flowKey,
           processedForStepRunKey: null,
-          processedByStepRun: null,
           processedForStep: null,
           toolCallJSON: null,
         });
@@ -75,7 +74,7 @@ const MessagesDisplay = ({
     return isVisibleMessage(message);
   });
   return (
-    <div className="flex flex-col-reverse">
+    <div className="flex flex-col-reverse overflow-auto">
       {messagesToDisplay.map((message) => {
         return (
           <MessageDisplay
@@ -95,16 +94,14 @@ export const FlowRunDisplay = withData(
     return (
       <div className="w-full flex justify-center h-screen pb-5">
         <div className="md:w-[32rem] w-full p-4 flex flex-col gap-4 h-full justify-end">
-          <div className="flex gap-5 overflow-auto">
-            {debugMode ? (
-              <DebugMessagesDisplay messages={messages}></DebugMessagesDisplay>
-            ) : (
-              <MessagesDisplay
-                flow={flow}
-                messages={messages}
-              ></MessagesDisplay>
-            )}
-          </div>
+          {debugMode ? (
+            <DebugMessagesDisplay
+              flowRunId={flowRun.uid}
+              messages={messages}
+            ></DebugMessagesDisplay>
+          ) : (
+            <MessagesDisplay flow={flow} messages={messages}></MessagesDisplay>
+          )}
 
           <NewFlowMessageTextBox
             flowRunKey={runId}

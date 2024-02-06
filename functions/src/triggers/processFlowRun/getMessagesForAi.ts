@@ -5,32 +5,50 @@ import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { getVariableNamesSorted } from "./getVariableNamesSorted";
 import { aiRoleMap } from "../aiRoleMap";
 import { ProcessStepParams } from "./processStepRun";
-import { StepRun } from "@/models/types/StepRun";
-import { groupBy } from "lodash";
+import { StepRun, getStepRunId } from "@/models/types/StepRun";
+import { flow, groupBy } from "lodash";
 import { replaceTemplate } from "./replaceTemplate";
+import { Timestamp } from "firebase-admin/firestore";
+import { fbCreate } from "../../helpers/fbWriters";
+import { FlowRun } from "@/models/types/FlowRun";
 
-export const getIntroSystemMessageForFlow = (flow: Flow) => {
-  return {
-    content: `You are a helpful assistant gathering information from a user, in order to faciliate the following task:
+export const createIntroFlowMessage = async (
+  flow: Flow,
+  flowRun: FlowRun,
+  timestamp: Timestamp
+) => {
+  const res = await fbCreate(
+    "flowMessage",
+    {
+      text: `You are a helpful assistant gathering information from a user, in order to faciliate the following task:
 title: ${flow.title}
 description: ${flow.description}
   
 I will prompt to you complete this tasks as a series of steps. In each step you will execute a prompt, possibly using information gathered from the user.`,
-    role: "system",
-  } as ChatCompletionMessageParam;
+      senderType: SenderType.FlowIntroduction,
+      flowKey: flow.uid,
+      processedForStep: null,
+      processedForStepRunKey: null,
+      flowRunKey: flowRun.uid,
+    },
+    { createdAt: timestamp }
+  );
+  return res;
 };
 
-export const getSystemMessageForStep = ({
+export const getSystemMessageForStep = async ({
   step,
+  flowRun,
   completedSteps,
   allSteps,
   variableValuessFromPreviousSteps,
 }: {
   step: Step;
+  flowRun: FlowRun;
   completedSteps: Step[];
   allSteps: Step[];
   variableValuessFromPreviousSteps: Record<string, string>;
-}): ChatCompletionMessageParam => {
+}): Promise<FlowMessage> => {
   const variarblesToCollect = getVariableNamesSorted(
     step.variableDescriptions || {}
   );
@@ -60,8 +78,8 @@ ${requiredInfoMsg}.`
     ${variarblesToCollect[0]}`
     : ``;
 
-  return {
-    content: `
+  const res = await fbCreate("flowMessage", {
+    text: `
   You have completed ${completedSteps.length} out of ${
       allSteps.length
     }. The next step is step #${completedSteps.length + 1}.${stepTitleMessage}
@@ -72,26 +90,50 @@ ${requiredInfoMsg}.`
 
   ${startPrompt}
   `,
-    role: "system",
-  };
+    senderType: SenderType.StepIntroduction,
+    flowKey: step.flowKey,
+    processedForStep: step.uid,
+    processedForStepRunKey: getStepRunId(flowRun.uid, step.uid),
+    flowRunKey: flowRun.uid,
+  });
+
+  return res.data;
 };
 
-export const getMessagesForAi = ({
+export const getMessagesForAi = async ({
   completedSteps,
   allSteps,
+  flowRun,
   flow,
   messages,
   variableValuessFromPreviousSteps,
 }: {
   completedSteps: Step[];
   allSteps: Step[];
+  flowRun: FlowRun;
   flow: Flow;
   messages: FlowMessage[];
   variableValuessFromPreviousSteps: Record<string, string>;
 }) => {
-  const messagesByStepKey = groupBy(messages, (_) => _.processedForStep);
+  const messagesWithoutFlowIntro = messages.filter(
+    (_) => _.senderType !== SenderType.FlowIntroduction
+  );
 
-  const firstMessage = getIntroSystemMessageForFlow(flow);
+  const messagesByStepKey = groupBy(
+    messagesWithoutFlowIntro,
+    (_) => _.processedForStep
+  );
+
+  const firstMessageIsAlreadyIntro =
+    messages[0].senderType === SenderType.FlowIntroduction;
+
+  const firstMessage = firstMessageIsAlreadyIntro
+    ? null
+    : await createIntroFlowMessage(
+        flow,
+        flowRun,
+        Timestamp.fromMillis(messages[0].createdAt.toMillis() - 100)
+      );
 
   const allMessagesWithoutFirst = allSteps.flatMap((step) => {
     const systemMessage = getSystemMessageForStep({
@@ -99,6 +141,7 @@ export const getMessagesForAi = ({
       completedSteps,
       allSteps,
       variableValuessFromPreviousSteps,
+      flowRun,
     });
     const messagesForThisStep = messagesByStepKey[step.uid] || [];
 

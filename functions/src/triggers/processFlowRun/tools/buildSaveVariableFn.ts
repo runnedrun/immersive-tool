@@ -26,6 +26,7 @@ export const getSaveVariableFnSpec = (
     },
     required: ["variableName", "value"],
   },
+  name: "saveVariable",
 });
 
 export const buildSaveVariableFn = ({

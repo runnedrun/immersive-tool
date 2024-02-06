@@ -45,7 +45,7 @@ const collectDataStep = async (params: ProcessStepParams) => {
 
 const saveOutputVariables: StepRunProcessor = async (params) => {
   const tools = [getSaveOutputVariablesFnSpec(params)];
-  await runTools(tools, params);
+  await runTools(tools, params, tools[0].name);
   return true;
 };
 
@@ -62,7 +62,17 @@ const runStepRunStateProcessor = async (
   params: ProcessStepParams
 ) => {
   const currentProcessor = stepRunStateToProcessor[stepStateName];
+  console.log(
+    "running processor for",
+    stepStateName,
+    params.currentStepRun.uid
+  );
   const isComplete = await currentProcessor(params);
+  console.log(
+    "processor run finished. Is completed?",
+    stepStateName,
+    isComplete
+  );
   if (isComplete) {
     await fbSet("stepRun", params.currentStepRun.uid, {
       state: {
@@ -75,6 +85,5 @@ const runStepRunStateProcessor = async (
 
 export const processStepRun = async (params: ProcessStepParams) => {
   const currentStepRunState = getNextStepRunState(params.currentStepRun.state)!;
-  runStepRunStateProcessor(currentStepRunState, params);
-  return;
+  return runStepRunStateProcessor(currentStepRunState, params);
 };

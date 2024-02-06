@@ -46,6 +46,11 @@ export const triggerProcessJob = onDocumentWritten(
           after.retriggerCount
         );
       }
+      console.log(
+        "running process job for",
+        change?.data?.after?.id,
+        after.jobType
+      );
       const jobfn = jobTypeMap[after.jobType];
       if (!jobfn) {
         error("No job type found: ", after.jobType);
