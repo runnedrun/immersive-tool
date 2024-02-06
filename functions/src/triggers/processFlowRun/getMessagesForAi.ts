@@ -7,6 +7,7 @@ import { aiRoleMap } from "../aiRoleMap";
 import { ProcessStepParams } from "./processStepRun";
 import { StepRun } from "@/models/types/StepRun";
 import { groupBy } from "lodash";
+import { replaceTemplate } from "./replaceTemplate";
 
 export const getIntroSystemMessageForFlow = (flow: Flow) => {
   return {
@@ -23,17 +24,22 @@ export const getSystemMessageForStep = ({
   step,
   completedSteps,
   allSteps,
+  variableValuessFromPreviousSteps,
 }: {
   step: Step;
   completedSteps: Step[];
   allSteps: Step[];
+  variableValuessFromPreviousSteps: Record<string, string>;
 }): ChatCompletionMessageParam => {
   const variarblesToCollect = getVariableNamesSorted(
     step.variableDescriptions || {}
   );
-  const aiIntroString = step.aiIntro
+  const aiIntroString = step.variableCollectionInstructions
     ? `Here are some additional details on how to collect the information:
-  ${step.aiIntro}`
+  ${replaceTemplate(
+    step.variableCollectionInstructions,
+    variableValuessFromPreviousSteps
+  )}`
     : "";
 
   const requiredInfoMsg = Object.entries(step.variableDescriptions || {})
@@ -75,11 +81,13 @@ export const getMessagesForAi = ({
   allSteps,
   flow,
   messages,
+  variableValuessFromPreviousSteps,
 }: {
   completedSteps: Step[];
   allSteps: Step[];
   flow: Flow;
   messages: FlowMessage[];
+  variableValuessFromPreviousSteps: Record<string, string>;
 }) => {
   const messagesByStepKey = groupBy(messages, (_) => _.processedForStep);
 
@@ -90,6 +98,7 @@ export const getMessagesForAi = ({
       step,
       completedSteps,
       allSteps,
+      variableValuessFromPreviousSteps,
     });
     const messagesForThisStep = messagesByStepKey[step.uid] || [];
 

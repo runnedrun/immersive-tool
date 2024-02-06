@@ -4,6 +4,7 @@ import { queryDocs, readDoc } from "../../helpers/fbReaders";
 import { fbCreate, fbSet } from "../../helpers/fbWriters";
 import { getMessagesForAi } from "./getMessagesForAi";
 import { processStepRun } from "./processStepRun";
+import { getStepRunId } from "@/models/types/StepRun";
 
 let reRunsAllowed = 30;
 
@@ -50,19 +51,24 @@ export const processFlowRun = async (flowRunKey: string) => {
   let currentStepRun = stepRuns.find((_) => _.stepKey === curStep.uid);
 
   if (isUndefined(currentStepRun)) {
-    const ref = await fbCreate("stepRun", {
-      flowKey: flowRun.flowKey,
-      flowRunKey,
-      stepKey: curStep.uid,
-      state: {
-        dataCollectionCompletedAt: null,
-        promptCompletedAt: null,
-        outputVariableSavingCompletedAt: null,
-        finalResponseCompletedAt: null,
-        stepCompletedAt: null,
+    const id = getStepRunId(flowRunKey, curStep.uid);
+    const ref = await fbCreate(
+      "stepRun",
+      {
+        flowKey: flowRun.flowKey,
+        flowRunKey,
+        stepKey: curStep.uid,
+        state: {
+          dataCollectionCompletedAt: null,
+          promptCompletedAt: null,
+          outputVariableSavingCompletedAt: null,
+          finalResponseCompletedAt: null,
+          stepCompletedAt: null,
+        },
+        variableValues: {},
       },
-      variableValues: {},
-    });
+      { id }
+    );
 
     currentStepRun = ref.data;
   }
@@ -84,13 +90,6 @@ export const processFlowRun = async (flowRunKey: string) => {
     })
   );
 
-  const messagesForGPT = getMessagesForAi({
-    flow,
-    completedSteps,
-    allSteps: steps,
-    messages: updatedMessagesWithStepKeyInfo,
-  });
-
   const allVariablesFromPreviousSteps = completedSteps.reduce((acc, step) => {
     const stepRun = stepRunsWithoutCurrentStep.find(
       (_) => _.stepKey === step.uid
@@ -100,6 +99,14 @@ export const processFlowRun = async (flowRunKey: string) => {
       ...(stepRun?.variableValues || {}),
     };
   }, {} as Record<string, string>);
+
+  const messagesForGPT = getMessagesForAi({
+    flow,
+    completedSteps,
+    allSteps: steps,
+    messages: updatedMessagesWithStepKeyInfo,
+    variableValuessFromPreviousSteps: allVariablesFromPreviousSteps,
+  });
 
   let reRuns = 0;
   const reRun = async () => {

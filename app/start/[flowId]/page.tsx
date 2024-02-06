@@ -2,6 +2,7 @@ import { triggerProcessOnWrite } from "@/data/helpers/triggerProcessOnWrite";
 import { readDoc } from "@/firebase/readerFe";
 import { fbCreate, fbSet } from "@/firebase/settersFe";
 import { SenderType } from "@/models/types/FlowMessage";
+import { getFlowRunId } from "@/models/types/FlowRun";
 import { redirect } from "next/navigation";
 
 const StartFlow = async ({
@@ -11,10 +12,15 @@ const StartFlow = async ({
 }) => {
   console.log("flowId", flowId);
   const flow = await readDoc("flow", flowId);
-  const ref = await fbCreate("flowRun", {
-    flowKey: flowId,
-    completedAt: null,
-  });
+  const runId = getFlowRunId(flowId);
+  const ref = await fbCreate(
+    "flowRun",
+    {
+      flowKey: flowId,
+      completedAt: null,
+    },
+    { id: runId }
+  );
   const flowRunId = ref.id;
   await fbCreate("flowMessage", {
     flowRunKey: flowRunId,

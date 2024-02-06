@@ -6,86 +6,20 @@ import { Field, Label } from "@/components/ui/fieldset";
 import { Step, VariableData } from "@/models/types/Step";
 import { StepTemplateDisplay } from "./StepTemplateDisplay";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, TrashIcon, XCircleIcon } from "@heroicons/react/16/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/16/solid";
 import { isEmpty, sortBy } from "lodash";
 import { Timestamp } from "firebase/firestore";
-import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted";
+import { ResponseDescriptionTemplateDisplay } from "./ResponseDescriptionTemplateDisplay";
+import { VariableDisplay } from "./VariableDisplay";
+import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay";
 
-export const VariableDisplay = ({
-  variableNamesAndDescription,
-  onVariableChange,
-  onDelete,
-  onNameChange,
+export const StepDisplay = ({
+  step,
+  variablesFromPreviousSteps,
 }: {
-  onVariableChange: (
-    variableName: string,
-    value: string,
-    oldValue: VariableData
-  ) => void;
-  variableNamesAndDescription: Record<string, VariableData>;
-  onNameChange?: (
-    variableName: string,
-    oldVariableName: string,
-    value: VariableData
-  ) => void;
-  onDelete?: (variableName: string) => void;
+  step: Step;
+  variablesFromPreviousSteps: Record<string, VariableData>;
 }) => {
-  const variableNames = getVariableNamesSorted(variableNamesAndDescription);
-
-  return (
-    <div className="flex flex-col gap-2">
-      {variableNames.map((variableName) => {
-        const nameDisplay = onNameChange ? (
-          <Input
-            className={"w-48"}
-            onChange={(e) => {
-              onNameChange(
-                e.target.value,
-                variableName,
-                variableNamesAndDescription[variableName]
-              );
-            }}
-            value={variableName}
-          ></Input>
-        ) : (
-          <div className="w-32 truncate">{variableName}</div>
-        );
-
-        const variableData = variableNamesAndDescription[variableName];
-        const variableDescription =
-          variableNamesAndDescription[variableName].description;
-
-        return (
-          <div key={variableName} className="flex gap-2 items-center">
-            {onDelete && (
-              <Button
-                color="red"
-                onClick={() => {
-                  onDelete(variableName);
-                }}
-              >
-                <XCircleIcon></XCircleIcon>
-              </Button>
-            )}
-            <div className="text-bold text-blue-400 w-fit">{nameDisplay}</div>
-            <Input
-              placeholder="description"
-              className={"border-none"}
-              value={variableDescription || ""}
-              onChange={(e) => {
-                e.stopPropagation();
-                onVariableChange(variableName, e.target.value, variableData);
-                return false;
-              }}
-            ></Input>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-export const StepDisplay = ({ step }: { step: Step }) => {
   const inputVariableDisplay = !isEmpty(step.variableDescriptions) ? (
     <VariableDisplay
       onVariableChange={(variableName, description, oldValue) => {
@@ -103,11 +37,6 @@ export const StepDisplay = ({ step }: { step: Step }) => {
     ></VariableDisplay>
   ) : (
     <div className="text-sm text-gray-600">No variables defined</div>
-  );
-
-  console.log(
-    "step.outputVariableDescriptions",
-    step.outputVariableDescriptions
   );
 
   const outputVariableDisplay = (
@@ -145,9 +74,15 @@ export const StepDisplay = ({ step }: { step: Step }) => {
           };
           delete newOutputVariableDescriptions[oldVariableName];
           newOutputVariableDescriptions[variableName] = value;
-          fbSet("step", step.uid, {
-            outputVariableDescriptions: newOutputVariableDescriptions,
-          });
+          fbSet(
+            "step",
+            step.uid,
+            {
+              ...step,
+              outputVariableDescriptions: newOutputVariableDescriptions,
+            },
+            { merge: false }
+          );
         }}
         variableNamesAndDescription={step.outputVariableDescriptions || {}}
       ></VariableDisplay>
@@ -172,7 +107,7 @@ export const StepDisplay = ({ step }: { step: Step }) => {
   );
 
   return (
-    <div className=" border-zinc-300 flex flex-col gap-2 p-2">
+    <div className=" border-zinc-300 flex flex-col gap-2 p-2 bg-zinc-100">
       <div className="text-lg">Step {(step.index || 0) + 1}</div>
       <div>
         <Field>
@@ -198,25 +133,30 @@ export const StepDisplay = ({ step }: { step: Step }) => {
       </div>
       <Field>
         <Label>Extra Instructions for data collection (optional)</Label>
-        <Textarea
-          className={"border-none"}
-          value={step.aiIntro || ""}
-          rows={2}
-          onChange={(e) => {
-            fbSet("step", step.uid, { aiIntro: e.target.value });
-          }}
-        ></Textarea>
+        <VariableCollectionDescriptionDisplay
+          step={step}
+          variablesFromPreviousSteps={variablesFromPreviousSteps}
+        ></VariableCollectionDescriptionDisplay>
       </Field>
       <div className="border-gray-300 p-2 border">
         <div className="mb-2">Variables:</div>
         <div className="flex-col flex gap-2">{inputVariableDisplay}</div>
       </div>
       <div>
-        <StepTemplateDisplay step={step}></StepTemplateDisplay>
+        <StepTemplateDisplay
+          variablesFromPreviousSteps={variablesFromPreviousSteps}
+          step={step}
+        ></StepTemplateDisplay>
       </div>
       <div className="border-gray-300 p-2 border">
         <div className="mb-2">Output variables for the next step:</div>
         <div className="flex-col flex gap-2">{outputVariableDisplay}</div>
+      </div>
+      <div>
+        <ResponseDescriptionTemplateDisplay
+          step={step}
+          variablesFromPreviousSteps={variablesFromPreviousSteps}
+        ></ResponseDescriptionTemplateDisplay>
       </div>
     </div>
   );

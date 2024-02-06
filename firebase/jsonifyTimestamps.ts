@@ -8,7 +8,10 @@ export const jsonifyTimestamps = (obj: any) => {
       typeof nestedValue?.seconds !== "undefined"
     ) {
       return {
-        value: new Timestamp(nestedValue.seconds, nestedValue.nanoseconds),
+        value: new Timestamp(
+          nestedValue.seconds,
+          nestedValue.nanoseconds
+        ).toMillis(),
         __convertToDate: true,
       };
     } else if (typeof nestedValue?._key !== "undefined") {

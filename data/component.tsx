@@ -6,8 +6,8 @@ export type PassFromServerToClientProp<
   InitialValuesType extends Record<string, any>,
   ParamsType extends Record<string, any> = {}
 > = {
-  _initialValues: InitialValuesType;
-  params: ParamsType;
+  _initialValues?: InitialValuesType;
+  params?: ParamsType;
 };
 export type ComponentWithInitialValues<
   InitialValuesType extends Record<string, any>,
@@ -18,14 +18,14 @@ export type ComponentWithInitialValues<
 ) => JSX.Element;
 
 export type DataFnType<
-  DataType extends Record<string, Observable<any>>,
+  DataType extends Record<string, any>,
   ParamsType extends Record<string, any>,
   PropsType extends Record<string, any> = {}
 > = (args: { params: ParamsType; props: PropsType }) => DataType;
 
 export const component = <
   ParamType extends Record<string, any>,
-  DataType extends Record<string, Observable<any>>
+  DataType extends Record<string, any>
 >(
   dataFn: DataFnType<DataType, ParamType>,
   ClientComponent: ComponentWithInitialValues<

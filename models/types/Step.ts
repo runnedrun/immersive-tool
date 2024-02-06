@@ -20,7 +20,7 @@ export type Step = {
   title: string;
   template: string;
   variableDescriptions: Record<string, VariableData> | null;
-  aiIntro: string | null;
+  variableCollectionInstructions: string | null;
   responseDescription: string | null;
   outputVariableDescriptions: Record<string, VariableData> | null;
 } & ModelBase;

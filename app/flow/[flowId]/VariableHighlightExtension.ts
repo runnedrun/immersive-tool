@@ -1,20 +1,39 @@
 import { Extension } from "@tiptap/core";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { Plugin, TextSelection } from "prosemirror-state";
+import { Observable } from "rxjs";
+import { PluginKey } from "@tiptap/pm/state";
+
+export const VariableHighlightExtensionName = "variableHighlight";
 
 export const VariableHighlightExtension = Extension.create({
-  name: "variableHighlight",
-
+  name: VariableHighlightExtensionName,
   addProseMirrorPlugins() {
     return [
       new Plugin({
+        key: new PluginKey(VariableHighlightExtensionName),
+        state: {
+          init() {
+            return [] as string[];
+          },
+          apply(tr, prev) {
+            const availableVariables = (tr.getMeta(
+              VariableHighlightExtensionName
+            ) || []) as string[];
+            if (availableVariables) {
+              return availableVariables;
+            } else {
+              return prev;
+            }
+          },
+        },
         props: {
           decorations(state) {
+            const availableVariables = this.getState(state) || [];
             const decorations: Decoration[] = [];
-            const { doc, tr } = state;
-            const pattern = /{{\w+}}/g;
+            const pattern = /{{([\w\s]+)}}/g;
 
-            doc.descendants((node, pos) => {
+            state.doc.descendants((node, pos) => {
               if (!node.isText) return;
 
               const text = node.text ?? "";
@@ -22,6 +41,10 @@ export const VariableHighlightExtension = Extension.create({
               while ((match = pattern.exec(text)) !== null) {
                 const start = pos + match.index;
                 const end = start + match[0].length;
+                const word = match[1];
+
+                if (!availableVariables.includes(word)) continue;
+
                 const decoration = Decoration.inline(start, end, {
                   style: "color: blue;",
                 });
@@ -29,7 +52,7 @@ export const VariableHighlightExtension = Extension.create({
               }
             });
 
-            return DecorationSet.create(doc, decorations);
+            return DecorationSet.create(state.doc, decorations);
           },
         },
       }),

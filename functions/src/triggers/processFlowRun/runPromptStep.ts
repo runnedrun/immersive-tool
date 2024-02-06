@@ -8,20 +8,7 @@ import {
   getFlowMessageWithDefaults,
 } from "@/models/types/FlowMessage";
 import { fbCreate, fbSet } from "@/firebase/settersFe";
-
-export const replaceTemplate = (
-  startingTemplate: string,
-  allVariablesAvailable: Record<string, string>
-) => {
-  const allVariableNames = Object.keys(allVariablesAvailable);
-
-  return allVariableNames.reduce((acc, variableName) => {
-    return acc.replace(
-      new RegExp(`{{${variableName}}}`, "g"),
-      allVariablesAvailable[variableName]
-    );
-  }, startingTemplate);
-};
+import { replaceTemplate } from "./replaceTemplate";
 
 const getChatMessageForCompletedStepRun = ({
   currentStep,

@@ -4,13 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { withData } from "@/data/withData";
 import { fbCreate } from "@/firebase/settersFe";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { flowRunDataFn } from "./flowRunDataFn";
-import { SenderType } from "@/models/types/FlowMessage";
+import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
 import {
   triggerProcessForJobNameAndId,
   triggerProcessOnWrite,
 } from "@/data/helpers/triggerProcessOnWrite";
+import TextareaAutosize from "react-textarea-autosize";
+import { isVisibleMessage } from "./isVisibleMessage";
+import { MessageDisplay } from "./MessageDisplay";
+import { Flow } from "@/models/types/Flow";
+import { DebugMessageDisplay } from "./DebugMessageDisplay";
+import { DebugMessagesDisplay } from "./DebugMessagesDisplay";
 
 const NewFlowMessageTextBox = ({
   flowRunKey,
@@ -22,6 +28,7 @@ const NewFlowMessageTextBox = ({
   const [messageText, setMessageText] = useState("");
   return (
     <form
+      className="w-full"
       onSubmit={async (e) => {
         await fbCreate("flowMessage", {
           flowRunKey,
@@ -40,32 +47,65 @@ const NewFlowMessageTextBox = ({
         return false;
       }}
     >
-      <div className="flex mr-2">
-        <Input
+      <div className="flex mr-2 w-full items-end gap-2 flex-col">
+        <TextareaAutosize
+          className="w-full p-2 border-2 border-gray-300 rounded-md"
           onChange={(e) => {
             setMessageText(e.target.value);
           }}
           value={messageText}
-        ></Input>
-        <Button type="submit">Send</Button>
+          minRows={2}
+        ></TextareaAutosize>
+        <Button className={"grow-0"} type="submit">
+          Send
+        </Button>
       </div>
     </form>
   );
 };
 
+const MessagesDisplay = ({
+  messages,
+  flow,
+}: {
+  messages: FlowMessage[];
+  flow: Flow;
+}) => {
+  const messagesToDisplay = messages.filter((message) => {
+    return isVisibleMessage(message);
+  });
+  return (
+    <div className="flex flex-col-reverse">
+      {messagesToDisplay.map((message) => {
+        return (
+          <MessageDisplay
+            message={message}
+            flow={flow}
+            key={message.uid}
+          ></MessageDisplay>
+        );
+      })}
+    </div>
+  );
+};
+
 export const FlowRunDisplay = withData(
   flowRunDataFn,
-  ({ data: { messages, flowRun }, params: { runId } }) => {
-    const reversedMessaages = [...messages].reverse();
-
+  ({ data: { messages, flowRun, flow, debugMode, runId } }) => {
     return (
-      <div>
-        <div>
-          {reversedMessaages.map((message) => {
-            return <div key={message.uid}>{message.text}</div>;
-          })}
-        </div>
-        <div>
+      <div className="w-full flex justify-center h-screen pb-5">
+        <div className="md:w-[32rem] w-full p-4 flex flex-col gap-4 h-full justify-end">
+          <div className="flex gap-5 overflow-auto">
+            {debugMode ? (
+              <DebugMessagesDisplay messages={messages}></DebugMessagesDisplay>
+            ) : (
+              <MessagesDisplay
+                flow={flow}
+                messages={messages}
+              ></MessagesDisplay>
+            )}
+          </div>
+
           <NewFlowMessageTextBox
             flowRunKey={runId}
             flowKey={flowRun.flowKey}

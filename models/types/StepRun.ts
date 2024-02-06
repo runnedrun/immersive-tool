@@ -29,6 +29,15 @@ export const getNextStepRunState = (state: StepRunState) => {
   return null;
 };
 
+export const getStepRunId = (flowRunKey: string, stepKey: string) => {
+  return `${flowRunKey}_${stepKey}`;
+};
+
+export const getStepAndFlowRunKeysFromStepRunId = (stepRunId: string) => {
+  const [flowRunKey, stepKey] = stepRunId.split("_");
+  return { flowRunKey, stepKey };
+};
+
 export type StepRun = {
   flowKey: string;
   flowRunKey: string;

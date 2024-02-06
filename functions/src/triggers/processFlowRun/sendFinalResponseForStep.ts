@@ -1,6 +1,6 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { runCompletionWithoutTools } from "./runTools";
-import { replaceTemplate } from "./runPromptStep";
+import { replaceTemplate } from "./replaceTemplate";
 import { ProcessStepParams, StepRunProcessor } from "./processStepRun";
 
 const getFinalResponseForStepPrompt = (params: ProcessStepParams) => {
