@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { withData } from "@/data/withData";
 import { fbCreate } from "@/firebase/settersFe";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flowRunDataFn } from "./flowRunDataFn";
 import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
 import {
@@ -27,39 +27,37 @@ const NewFlowMessageTextBox = ({
 }) => {
   const [messageText, setMessageText] = useState("");
   return (
-    <form
-      className="w-full"
-      onSubmit={async (e) => {
-        await fbCreate("flowMessage", {
-          flowRunKey,
-          text: messageText,
-          senderType: SenderType.User,
-          flowKey,
-          processedForStepRunKey: null,
-          processedForStep: null,
-          toolCallJSON: null,
-        });
-        triggerProcessForJobNameAndId("flowRun", flowRunKey);
-        setMessageText("");
-        e.preventDefault();
+    <div className="flex mr-2 items-end gap-2 flex-col w-full">
+      <TextareaAutosize
+        className="w-full p-2 border-2 border-gray-300 rounded-md"
+        onChange={(e) => {
+          setMessageText(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            fbCreate("flowMessage", {
+              flowRunKey,
+              text: messageText,
+              senderType: SenderType.User,
+              flowKey,
+              processedForStepRunKey: null,
+              processedForStep: null,
+              toolCallsJSON: null,
+            });
+            triggerProcessForJobNameAndId("flowRun", flowRunKey);
+            setMessageText("");
+            e.preventDefault();
 
-        return false;
-      }}
-    >
-      <div className="flex mr-2 w-full items-end gap-2 flex-col">
-        <TextareaAutosize
-          className="w-full p-2 border-2 border-gray-300 rounded-md"
-          onChange={(e) => {
-            setMessageText(e.target.value);
-          }}
-          value={messageText}
-          minRows={2}
-        ></TextareaAutosize>
-        <Button className={"grow-0"} type="submit">
-          Send
-        </Button>
-      </div>
-    </form>
+            return false;
+          }
+        }}
+        value={messageText}
+        minRows={2}
+      ></TextareaAutosize>
+      <Button className={"grow-0"} type="submit">
+        Send
+      </Button>
+    </div>
   );
 };
 
@@ -73,8 +71,20 @@ const MessagesDisplay = ({
   const messagesToDisplay = messages.filter((message) => {
     return isVisibleMessage(message);
   });
+  const messageListRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (messageListRef.current) {
+      const firstChild = messageListRef.current.firstElementChild;
+      if (firstChild) {
+        firstChild.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    }
+  }, [messagesToDisplay.length]);
   return (
-    <div className="flex flex-col-reverse overflow-auto">
+    <div
+      className="flex flex-col-reverse overflow-auto justify-start"
+      ref={messageListRef}
+    >
       {messagesToDisplay.map((message) => {
         return (
           <MessageDisplay

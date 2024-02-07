@@ -1,0 +1,71 @@
+import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
+import { Step } from "@/models/types/Step";
+import { getVariableNamesSorted } from "./getVariableNamesSorted";
+import { getStepRunId } from "@/models/types/StepRun";
+import { replaceTemplate } from "./replaceTemplate";
+import { fbCreate } from "../../helpers/fbWriters";
+import { FlowRun } from "@/models/types/FlowRun";
+
+export const createSystemMessageForStepStart = async ({
+  step,
+  flowRun,
+  completedSteps,
+  allSteps,
+  variableValuessFromPreviousSteps,
+}: {
+  step: Step;
+  flowRun: FlowRun;
+  completedSteps: Step[];
+  allSteps: Step[];
+  variableValuessFromPreviousSteps: Record<string, string>;
+}): Promise<FlowMessage> => {
+  const variarblesToCollect = getVariableNamesSorted(
+    step.variableDescriptions || {}
+  );
+  const aiIntroString = step.variableCollectionInstructions
+    ? `Here are some additional details on how to collect the information:
+  ${replaceTemplate(
+    step.variableCollectionInstructions,
+    variableValuessFromPreviousSteps
+  )}`
+    : "";
+
+  const requiredInfoMsg = Object.entries(step.variableDescriptions || {})
+    .map(([variable, desc]) => `${variable}: ${desc.description}`)
+    .join("\n");
+
+  const variablesToCollectMessage = variarblesToCollect.length
+    ? `The information you need to gather for this step is the following: 
+${requiredInfoMsg}.`
+    : "";
+
+  const stepTitleMessage = step.title
+    ? ` The title of this step is: ${step.title}`
+    : "";
+
+  const startPrompt = variarblesToCollect.length
+    ? `Start off by prompting the user for the first piece of information: 
+    ${variarblesToCollect[0]}`
+    : ``;
+
+  const res = await fbCreate("flowMessage", {
+    text: `
+  You have completed ${completedSteps.length} steps out of ${
+      allSteps.length
+    }. The next step is step #${completedSteps.length + 1}.${stepTitleMessage}
+
+  ${variablesToCollectMessage}
+  
+  ${aiIntroString}  
+
+  ${startPrompt}
+  `,
+    senderType: SenderType.System,
+    flowKey: step.flowKey,
+    processedForStep: step.uid,
+    processedForStepRunKey: getStepRunId(flowRun.uid, step.uid),
+    flowRunKey: flowRun.uid,
+  });
+
+  return res.data;
+};

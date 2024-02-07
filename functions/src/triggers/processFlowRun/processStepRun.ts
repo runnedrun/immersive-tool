@@ -29,7 +29,7 @@ export type ProcessStepParams = {
 export type StepRunProcessor = (params: ProcessStepParams) => Promise<boolean>; // boolean for whether or not the step is complete;
 
 const collectDataStep = async (params: ProcessStepParams) => {
-  const hasVariablesToCollect = isEmpty(
+  const hasVariablesToCollect = !isEmpty(
     params.currentStep.variableDescriptions
   );
 

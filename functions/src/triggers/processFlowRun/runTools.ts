@@ -23,6 +23,10 @@ export const runTools = async (
     } as RunnableToolFunction<any>;
   });
 
+  console.log("messages", JSON.stringify(messages, null, 2));
+
+  let seenNMEssages = 0;
+
   const client = getOpenAIClient();
   const runner = client.beta.chat.completions
     .runTools({
@@ -33,26 +37,34 @@ export const runTools = async (
         ? { function: { name: requiredTool }, type: "function" }
         : undefined,
     })
-    .on("functionCall", (message) => {
-      fbCreate("flowMessage", {
-        flowRunKey: flowRunKey,
-        text: "",
-        toolCallJSON: JSON.stringify(message),
-        senderType: SenderType.ToolCall,
-        flowKey: flowKey,
-        processedForStepRunKey: params.currentStepRun.uid,
-        processedForStep: params.currentStep.uid,
-      });
-    })
-    .on("functionCallResult", (message) => {
-      fbCreate("flowMessage", {
-        flowRunKey: flowRunKey,
-        text: message,
-        senderType: SenderType.ToolResponse,
-        flowKey: flowKey,
-        processedForStepRunKey: params.currentStepRun.uid,
-        processedForStep: params.currentStep.uid,
-      });
+
+    .on("message", (message) => {
+      seenNMEssages++;
+      if (seenNMEssages > messages.length) {
+        if (message.role === "assistant") {
+          if (message.tool_calls) {
+            fbCreate("flowMessage", {
+              flowRunKey: flowRunKey,
+              text: "",
+              toolCallsJSON: JSON.stringify(message.tool_calls),
+              senderType: SenderType.ToolCall,
+              flowKey: flowKey,
+              processedForStepRunKey: params.currentStepRun.uid,
+              processedForStep: params.currentStep.uid,
+            });
+          }
+        } else if (message.role === "tool") {
+          fbCreate("flowMessage", {
+            flowRunKey: flowRunKey,
+            text: message.content,
+            toolCallId: message.tool_call_id,
+            senderType: SenderType.ToolResponse,
+            flowKey: flowKey,
+            processedForStepRunKey: params.currentStepRun.uid,
+            processedForStep: params.currentStep.uid,
+          });
+        }
+      }
     });
 
   const respForUser = await runner.finalContent();
@@ -66,7 +78,7 @@ export const runTools = async (
       flowKey: flowKey,
       processedForStepRunKey: params.currentStepRun.uid,
       processedForStep: params.currentStep.uid,
-      toolCallJSON: null,
+      toolCallsJSON: null,
     });
   }
 
@@ -76,7 +88,7 @@ export const runTools = async (
 export const runCompletionWithoutTools = async (params: ProcessStepParams) => {
   const client = getOpenAIClient();
   const runner = client.beta.chat.completions.stream({
-    model: "gpt-4",
+    model: "gpt-3.5-turbo",
     messages: params.messages,
   });
 

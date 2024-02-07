@@ -62,10 +62,10 @@ export const buildSaveVariableFn = ({
     if (nextVariableToCollect) {
       const returnMessage = `Successfully saved ${params.variableName} to ${params.value}. Your next variable to collect is: 
     name: ${nextVariableToCollect}
-    description: ${currentStep.variableDescriptions?.[nextVariableToCollect]}`;
+    description: ${currentStep.variableDescriptions?.[nextVariableToCollect].description}`;
       return returnMessage;
     } else {
-      return null;
+      return "All variables collected. DO NOT respond to this message.";
     }
   };
 };

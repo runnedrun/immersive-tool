@@ -1,4 +1,7 @@
-import { triggerProcessOnWrite } from "@/data/helpers/triggerProcessOnWrite";
+import {
+  triggerProcessForJobNameAndId,
+  triggerProcessOnWrite,
+} from "@/data/helpers/triggerProcessOnWrite";
 import { readDoc } from "@/firebase/readerFe";
 import { fbCreate, fbSet } from "@/firebase/settersFe";
 import { SenderType } from "@/models/types/FlowMessage";
@@ -13,31 +16,19 @@ const StartFlow = async ({
   searchParams: { debug: string };
 }) => {
   console.log("flowId", flowId);
-  const flow = await readDoc("flow", flowId);
   const runId = getFlowRunId(flowId);
-  const ref = await fbCreate(
-    "flowRun",
-    {
-      flowKey: flowId,
-      completedAt: null,
-    },
-    { id: runId }
+  const ref = await triggerProcessOnWrite(
+    fbCreate(
+      "flowRun",
+      {
+        flowKey: flowId,
+        completedAt: null,
+      },
+      { id: runId }
+    )
   );
-  const flowRunId = ref.id;
-  await fbCreate("flowMessage", {
-    flowRunKey: flowRunId,
-    flowKey: flowId,
-    senderType: SenderType.Introduction,
-    text: flow.introductionMessage,
-    processedForStepRunKey: null,
-    processedForStep: null,
-    toolCallJSON: null,
-  });
 
-  await triggerProcessOnWrite(Promise.resolve(ref));
-  console.log("DEBUG", debug);
-
-  const url = debug ? `/run/${flowRunId}?debug=true` : `/run/${flowRunId}`;
+  const url = debug ? `/run/${ref.id}?debug=true` : `/run/${ref.id}`;
   redirect(url);
 };
 

@@ -1,12 +1,9 @@
 import { DataFnType } from "@/data/component";
 import { withData } from "@/data/withData";
 import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
-import { Step } from "@/models/types/Step";
-import { Observable, of } from "rxjs";
-import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
-
-import { getObsForDoc, readDoc } from "@/firebase/readerFe";
 import { JsonDisplay } from "./JsonDisplay";
+import classnames from "classnames";
+import { isVisibleMessage } from "./isVisibleMessage";
 
 export const dataFn: DataFnType<{}, {}, { message: FlowMessage }> = ({
   props,
@@ -27,10 +24,16 @@ export const SenderTypeNameMap: Record<SenderType, string> = {
 };
 
 export const DebugMessageDisplay = withData(dataFn, ({ data: {}, message }) => {
-  const fnResponseDisplay =
-    message.senderType === SenderType.ToolResponse ? (
-      <div>Response: {message.text}</div>
-    ) : null;
+  const textDisplay = message.text ? (
+    <div
+      className={classnames(
+        { "text-gray-500": !isVisibleMessage(message) },
+        "whitespace-pre-wrap"
+      )}
+    >
+      {message.text}
+    </div>
+  ) : null;
 
   const fnCallDisplay =
     message.senderType === SenderType.ToolCall ? (
@@ -38,20 +41,17 @@ export const DebugMessageDisplay = withData(dataFn, ({ data: {}, message }) => {
         <div>Data</div>
         <div>
           <JsonDisplay
-            data={JSON.parse(message.toolCallJSON || "{}")}
+            data={JSON.parse(message.toolCallsJSON || "{}")}
           ></JsonDisplay>
         </div>
       </div>
     ) : null;
 
-  const textDisplay = message.text ? <div>{message.text}</div> : null;
-
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 p-2">
       <div className="font-bold text-sm">
         {SenderTypeNameMap[message.senderType]}
       </div>
-      {fnResponseDisplay}
       {fnCallDisplay}
       {textDisplay}
     </div>

@@ -5,7 +5,6 @@ export const isVisibleMessage = (message: FlowMessage) => {
   return (
     message.senderType === SenderType.User ||
     message.senderType === SenderType.Bot ||
-    message.senderType ||
-    SenderType.Introduction
+    message.senderType === SenderType.Introduction
   );
 };

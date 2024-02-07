@@ -29,6 +29,7 @@
     "axios": "^1.6.2",
     "batch-promises": "^0.0.3",
     "class-variance-authority": "^0.7.0",
+    "classnames": "^2.5.1",
     "clsx": "^2.0.0",
     "dayjs": "^1.11.10",
     "firebase": "^10.7.0",

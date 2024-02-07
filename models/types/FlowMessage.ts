@@ -8,8 +8,6 @@ export enum SenderType {
   Bot,
   Introduction,
   System,
-  FlowIntroduction,
-  StepIntroduction,
   ToolCall,
   ToolResponse,
 }
@@ -24,7 +22,7 @@ export const getFlowMessageWithDefaults = (
     processedForStepRunKey: null,
     processedByStepRun: null,
     processedForStep: null,
-    toolCallJSON: null,
+    toolCallsJSON: null,
     ...flowMessage,
   } as Omit<FlowMessage, keyof ModelBase>;
 };
@@ -35,7 +33,9 @@ export type FlowMessage = {
   processedForStepRunKey: string | null;
   processedForStep?: string | null;
   text: string;
-  toolCallJSON?: null | string;
+  toolCallsJSON?: null | string;
+  toolCallId?: null | string;
   createdAt: Timestamp;
   senderType: SenderType;
+  isFlowIntro?: boolean;
 } & ModelBase;

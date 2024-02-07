@@ -1,10 +1,16 @@
+import { getStepRunId } from "@/models/types/StepRun";
+import { Timestamp } from "firebase-admin/firestore";
 import { isUndefined } from "lodash";
 import { queryDocs, readDoc } from "../../helpers/fbReaders";
 import { fbCreate, fbSet } from "../../helpers/fbWriters";
-import { getMessagesForAi } from "./getMessagesForAi";
+import {
+  createIntroFlowMessage,
+  createUserFacingIntro,
+} from "./createIntroFlowMessage";
 import { processStepRun } from "./processStepRun";
-import { getStepRunId } from "@/models/types/StepRun";
-import { Timestamp } from "firebase-admin/firestore";
+import { createSystemMessageForStepStart } from "./getSystemMessageForStep";
+import { getMessagesForAi } from "./getMessagesForAi";
+import { FlowMessage } from "@/models/types/FlowMessage";
 
 let reRunsAllowed = 30;
 
@@ -13,10 +19,10 @@ export const processFlowRun = async (flowRunKey: string) => {
 
   console.log("flow run", flowRun);
 
-  const [steps, stepRuns, flow, messages] = await Promise.all([
+  const [steps, stepRuns, flow, unprocessedMessages] = await Promise.all([
     queryDocs("step", (q) => {
       return q
-        .where("flowKey", "==", "1")
+        .where("flowKey", "==", flowRun.flowKey)
         .where("archived", "==", false)
         .orderBy("index", "asc");
     }),
@@ -32,6 +38,10 @@ export const processFlowRun = async (flowRunKey: string) => {
     }),
   ]);
 
+  let messages = unprocessedMessages.length
+    ? unprocessedMessages.reverse()
+    : [(await createIntroFlowMessage(flow, flowRunKey)).data];
+
   const stepsCompletedBooleans = steps.map((step) => {
     return !!stepRuns.find(
       (_) => _.stepKey === step.uid && _.state.stepCompletedAt
@@ -40,6 +50,7 @@ export const processFlowRun = async (flowRunKey: string) => {
 
   const currentStepIndex = stepsCompletedBooleans.indexOf(false);
   const curStep = steps[currentStepIndex];
+  const completedSteps = steps.slice(0, currentStepIndex);
 
   if (!curStep) {
     fbSet("flowRun", flowRunKey, {
@@ -50,7 +61,37 @@ export const processFlowRun = async (flowRunKey: string) => {
 
   let currentStepRun = stepRuns.find((_) => _.stepKey === curStep.uid);
 
+  const stepRunsWithoutCurrentStep = stepRuns.filter(
+    (_) => _.uid !== currentStepRun?.uid
+  );
+
+  const allVariablesFromPreviousSteps = completedSteps.reduce((acc, step) => {
+    const stepRun = stepRunsWithoutCurrentStep.find(
+      (_) => _.stepKey === step.uid
+    );
+    return {
+      ...acc,
+      ...(stepRun?.variableValues || {}),
+    };
+  }, {} as Record<string, string>);
+
   if (isUndefined(currentStepRun)) {
+    messages = [
+      ...messages,
+      await createSystemMessageForStepStart({
+        allSteps: steps,
+        completedSteps,
+        flowRun,
+        step: curStep,
+        variableValuessFromPreviousSteps: allVariablesFromPreviousSteps,
+      }),
+    ];
+
+    messages =
+      messages.length === 2
+        ? [...messages, (await createUserFacingIntro(flow, flowRunKey)).data]
+        : messages;
+
     const id = getStepRunId(flowRunKey, curStep.uid);
     const ref = await fbCreate(
       "stepRun",
@@ -73,40 +114,25 @@ export const processFlowRun = async (flowRunKey: string) => {
     currentStepRun = ref.data;
   }
 
-  const stepRunsWithoutCurrentStep = stepRuns.filter(
-    (_) => _.uid !== currentStepRun!.uid
-  );
-
-  const completedSteps = steps.slice(0, currentStepIndex);
-
   const updatedMessagesWithStepKeyInfo = await Promise.all(
     messages.map(async (message) => {
       if (!message.processedForStep) {
         message.processedForStepRunKey = currentStepRun!.uid;
         message.processedForStep = curStep.uid;
+        console.log(
+          "updating message",
+          message.uid,
+          "for step",
+          curStep.uid,
+          message.processedForStepRunKey
+        );
         await fbSet("flowMessage", message.uid, message);
       }
       return message;
     })
   );
 
-  const allVariablesFromPreviousSteps = completedSteps.reduce((acc, step) => {
-    const stepRun = stepRunsWithoutCurrentStep.find(
-      (_) => _.stepKey === step.uid
-    );
-    return {
-      ...acc,
-      ...(stepRun?.variableValues || {}),
-    };
-  }, {} as Record<string, string>);
-
-  const messagesForGPT = getMessagesForAi({
-    flow,
-    completedSteps,
-    allSteps: steps,
-    messages: updatedMessagesWithStepKeyInfo,
-    variableValuessFromPreviousSteps: allVariablesFromPreviousSteps,
-  });
+  const messagesForGPT = getMessagesForAi(updatedMessagesWithStepKeyInfo);
 
   let reRuns = 0;
   const reRun = async () => {

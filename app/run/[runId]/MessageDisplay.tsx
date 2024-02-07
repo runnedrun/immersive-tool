@@ -18,23 +18,3 @@ export const MessageDisplay = ({
     </div>
   );
 };
-
-// export const MessageDisplay = ({
-//   message,
-//   flow,
-//   debugMode,
-// }: {
-//   flow: Flow;
-//   message: FlowMessage;
-//   debugMode: boolean;
-// }) => {
-//   const display = debugMode ? (
-//     <DebugMessageDisplay message={message}></DebugMessageDisplay>
-//   ) : (
-//     <UserFacingMessageDisplay
-//       flow={flow}
-//       message={message}
-//     ></UserFacingMessageDisplay>
-//   );
-//   return <div>{display}</div>;
-// };

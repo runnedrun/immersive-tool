@@ -7,7 +7,7 @@ export const JsonDisplay = ({
 }) => {
   return (
     <JsonView
-      shouldExpandNode={(a) => a < 1}
+      shouldExpandNode={(a) => a < 4}
       data={data}
       style={defaultStyles}
     ></JsonView>

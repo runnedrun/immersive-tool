@@ -2,9 +2,7 @@ import { onCall } from "firebase-functions/v2/https";
 import { fbCreate, fbSet } from "../helpers/fbWriters";
 import { Timestamp } from "firebase-admin/firestore";
 
-export const setup = onCall(async () => {
-  console.log("setup");
-
+const createBigFlow = async () => {
   const ref = await fbCreate(
     "flow",
     {
@@ -102,4 +100,66 @@ export const setup = onCall(async () => {
       id: "step3",
     }
   );
+};
+
+const createSmallFlow = async () => {
+  const ref = await fbCreate(
+    "flow",
+    {
+      description: "This is a short test flow",
+      introductionMessage: "Welcome to the test flow",
+      title: "Test Flow",
+      aiName: "Test host",
+    },
+    { id: "2" }
+  );
+
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title: "Get the users name",
+      index: 0,
+      flowKey: ref.id,
+      template: "Give me a similar name to: {{name}}",
+      responseDescription: "Respond to the user with 'Ok great processing...'",
+      variableDescriptions: {
+        name: {
+          description: "the users name",
+          createdAt: Timestamp.fromMillis(1000),
+        },
+      },
+      outputVariableDescriptions: {
+        similarName: {
+          description: "the similar name you generated",
+          createdAt: Timestamp.fromMillis(4000),
+        },
+      },
+    },
+    {
+      id: "2-step1",
+    }
+  );
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title: "Make a rhyme with the name",
+      index: 0,
+      flowKey: ref.id,
+      template: "Give me a rhyme for {{similarName}}",
+      responseDescription: "Send back the rhyme you generated",
+      variableDescriptions: null,
+      outputVariableDescriptions: null,
+    },
+    {
+      id: "3-step1",
+    }
+  );
+};
+
+export const setup = onCall(async () => {
+  console.log("setup");
+  createBigFlow();
+  createSmallFlow();
 });
