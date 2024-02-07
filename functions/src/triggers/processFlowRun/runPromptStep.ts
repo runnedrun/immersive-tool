@@ -50,6 +50,7 @@ export const runPromptStep: StepRunProcessor = async (params) => {
   );
 
   params.messages = [...params.messages, newMessage];
-  await runTools(tools, params);
+  const hideMessages = true;
+  await runTools(tools, params, undefined, hideMessages);
   return true;
 };

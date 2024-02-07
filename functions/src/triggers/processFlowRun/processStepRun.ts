@@ -13,10 +13,11 @@ import { isEmpty } from "lodash";
 import { Timestamp } from "firebase-admin/firestore";
 import { runPromptStep } from "./runPromptStep";
 import { sendFinalResponseForStep } from "./sendFinalResponseForStep";
+import { RunnableFunctionWithParse } from "openai/lib/RunnableFunction.mjs";
 
 export type StepProcessingToolBuilder<ToolParams extends object> = (
   params: ProcessStepParams
-) => (params: ToolParams) => Promise<string | null>;
+) => RunnableFunctionWithParse<ToolParams>["function"];
 
 export type ProcessStepParams = {
   messages: ChatCompletionMessageParam[];

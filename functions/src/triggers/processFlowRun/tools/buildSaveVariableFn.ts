@@ -1,7 +1,13 @@
-import { RunnableFunction } from "openai/lib/RunnableFunction.mjs";
+import {
+  RunnableFunction,
+  RunnableFunctionWithParse,
+} from "openai/lib/RunnableFunction.mjs";
 import { fbSet } from "../../../helpers/fbWriters";
 import { getVariableNamesSorted } from "../getVariableNamesSorted";
-import { ProcessStepParams } from "../processStepRun";
+import {
+  ProcessStepParams,
+  StepProcessingToolBuilder,
+} from "../processStepRun";
 
 export type SaveVariableParams = {
   variableName: string;
@@ -29,12 +35,16 @@ export const getSaveVariableFnSpec = (
   name: "saveVariable",
 });
 
-export const buildSaveVariableFn = ({
+type SaveVariableFnParams = { variableName: string; value: string };
+
+export const buildSaveVariableFn: StepProcessingToolBuilder<
+  SaveVariableFnParams
+> = ({
   currentStepRun,
   currentStep,
   ...allVariablesFromPreviousSteps
 }: ProcessStepParams) => {
-  return async (params: { variableName: string; value: string }) => {
+  return async (params, runner) => {
     await fbSet("stepRun", currentStepRun.uid, {
       variableValues: {
         [params.variableName]: params.value,
@@ -65,7 +75,7 @@ export const buildSaveVariableFn = ({
     description: ${currentStep.variableDescriptions?.[nextVariableToCollect].description}`;
       return returnMessage;
     } else {
-      return "All variables collected. DO NOT respond to this message.";
+      runner.abort();
     }
   };
 };

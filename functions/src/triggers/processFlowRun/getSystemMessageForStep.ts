@@ -23,7 +23,7 @@ export const createSystemMessageForStepStart = async ({
     step.variableDescriptions || {}
   );
   const aiIntroString = step.variableCollectionInstructions
-    ? `Here are some additional details on how to collect the information:
+    ? `\nHere are some additional details on how to collect the information:
   ${replaceTemplate(
     step.variableCollectionInstructions,
     variableValuessFromPreviousSteps
@@ -35,16 +35,16 @@ export const createSystemMessageForStepStart = async ({
     .join("\n");
 
   const variablesToCollectMessage = variarblesToCollect.length
-    ? `The information you need to gather for this step is the following: 
+    ? `\n\nThe information you need to gather for this step is the following: 
 ${requiredInfoMsg}.`
     : "";
 
   const stepTitleMessage = step.title
-    ? ` The title of this step is: ${step.title}`
+    ? `\nThe title of this step is: ${step.title}`
     : "";
 
   const startPrompt = variarblesToCollect.length
-    ? `Start off by prompting the user for the first piece of information: 
+    ? `\nStart off by prompting the user for the first piece of information: 
     ${variarblesToCollect[0]}`
     : ``;
 
@@ -52,14 +52,9 @@ ${requiredInfoMsg}.`
     text: `
   You have completed ${completedSteps.length} steps out of ${
       allSteps.length
-    }. The next step is step #${completedSteps.length + 1}.${stepTitleMessage}
-
-  ${variablesToCollectMessage}
-  
-  ${aiIntroString}  
-
-  ${startPrompt}
-  `,
+    }. The next step is step #${
+      completedSteps.length + 1
+    }.${stepTitleMessage}${variablesToCollectMessage}${aiIntroString}${startPrompt}`,
     senderType: SenderType.System,
     flowKey: step.flowKey,
     processedForStep: step.uid,

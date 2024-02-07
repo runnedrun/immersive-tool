@@ -145,7 +145,7 @@ const createSmallFlow = async () => {
     {
       variableCollectionInstructions: null,
       title: "Make a rhyme with the name",
-      index: 0,
+      index: 1,
       flowKey: ref.id,
       template: "Give me a rhyme for {{similarName}}",
       responseDescription: "Send back the rhyme you generated",

@@ -21,6 +21,7 @@ export const SenderTypeNameMap: Record<SenderType, string> = {
   [SenderType.ToolResponse]: "Tool Response",
   [SenderType.ToolCall]: "Tool Call",
   [SenderType.Bot]: "AI message to user",
+  [SenderType.ExecutionResponse]: "Hidden message",
 };
 
 export const DebugMessageDisplay = withData(dataFn, ({ data: {}, message }) => {

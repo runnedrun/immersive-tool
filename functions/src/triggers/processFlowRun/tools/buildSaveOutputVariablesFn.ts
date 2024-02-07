@@ -1,10 +1,18 @@
 import { isEmpty } from "lodash";
 import { fbSet } from "../../../helpers/fbWriters";
 
-import { RunnableFunction } from "openai/lib/RunnableFunction.mjs";
+import {
+  RunnableFunction,
+  RunnableFunctionWithParse,
+} from "openai/lib/RunnableFunction.mjs";
 import { ProcessStepParams } from "../processStepRun";
 
 export type SaveMultipleVariablesParams = Record<string, string>;
+
+// export type ToolFn = (
+//   args: string,
+//   runner: ChatCompletionRunner | ChatCompletionStreamingRunner
+// ) => PromiseOrValue<unknown>;
 
 export const getSaveOutputVariablesFnSpec = (
   params: ProcessStepParams
@@ -34,8 +42,8 @@ export const getSaveOutputVariablesFnSpec = (
 
 export const buildSaveOutputVariableFn = ({
   currentStepRun,
-}: ProcessStepParams) => {
-  return async (params: SaveMultipleVariablesParams) => {
+}: ProcessStepParams): RunnableFunctionWithParse<SaveMultipleVariablesParams>["function"] => {
+  return async (params: SaveMultipleVariablesParams, runner) => {
     const currentVariableValues = currentStepRun.variableValues;
 
     await fbSet("stepRun", currentStepRun.uid, {
@@ -45,6 +53,7 @@ export const buildSaveOutputVariableFn = ({
       },
     });
 
+    runner.abort();
     return null;
   };
 };

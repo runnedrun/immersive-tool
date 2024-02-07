@@ -1,4 +1,7 @@
-import { RunnableFunction } from "openai/lib/RunnableFunction.mjs";
+import {
+  RunnableFunction,
+  RunnableFunctionWithParse,
+} from "openai/lib/RunnableFunction.mjs";
 import {
   ProcessStepParams,
   StepProcessingToolBuilder,

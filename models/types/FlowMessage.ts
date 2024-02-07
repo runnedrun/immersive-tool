@@ -6,6 +6,7 @@ import { Optional } from "utility-types";
 export enum SenderType {
   User,
   Bot,
+  ExecutionResponse,
   Introduction,
   System,
   ToolCall,
