@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .json-view span {
+    @apply truncate block;
+  }
+}
+
 .tiptap p.is-editor-empty:first-child::before {
   color: #adb5bd;
   content: attr(data-placeholder);
@@ -12,4 +18,11 @@
 
 .ProseMirror {
   outline: none;
+}
+
+.flow-run-display {
+  a {
+    color: #1a202c;
+    text-decoration: underline;
+  }
 }

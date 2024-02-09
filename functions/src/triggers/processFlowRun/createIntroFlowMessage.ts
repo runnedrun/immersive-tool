@@ -11,7 +11,8 @@ export const createIntroFlowMessage = async (
 title: ${flow.title}
 description: ${flow.description}
   
-I will prompt to you complete this tasks as a series of steps. In each step you will execute a prompt, possibly using information gathered from the user.`,
+I will prompt to you complete this tasks as a series of steps. In each step you will execute a prompt, possibly using information gathered from the user.
+You can reply in markdown.`,
     senderType: SenderType.System,
     flowKey: flow.uid,
     processedForStep: null,

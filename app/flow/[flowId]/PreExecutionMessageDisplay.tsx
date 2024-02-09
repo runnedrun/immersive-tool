@@ -18,7 +18,7 @@ export const PreExecutionMessageDisplay = ({
   return (
     <div className="p-2 flex-col flex gap-2">
       <div className="">
-        Exactt Message to send before starting execution (optional)
+        Exact Message to send before starting execution (optional)
       </div>
       <div>
         <PromptDisplayWithVariables

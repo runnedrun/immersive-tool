@@ -30,6 +30,19 @@ const NewFlowMessageTextBox = ({
   disabled?: boolean;
 }) => {
   const [messageText, setMessageText] = useState("");
+  const sendMessage = async () => {
+    fbCreate("flowMessage", {
+      flowRunKey,
+      text: messageText,
+      senderType: SenderType.User,
+      flowKey,
+      processedForStepRunKey: null,
+      processedForStep: null,
+      toolCallsJSON: null,
+    });
+    triggerProcessForJobNameAndId("flowRun", flowRunKey);
+    setMessageText("");
+  };
   return (
     <div className="flex mr-2 items-end gap-2 flex-col w-full">
       <TextareaAutosize
@@ -40,17 +53,7 @@ const NewFlowMessageTextBox = ({
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
-            fbCreate("flowMessage", {
-              flowRunKey,
-              text: messageText,
-              senderType: SenderType.User,
-              flowKey,
-              processedForStepRunKey: null,
-              processedForStep: null,
-              toolCallsJSON: null,
-            });
-            triggerProcessForJobNameAndId("flowRun", flowRunKey);
-            setMessageText("");
+            sendMessage();
             e.preventDefault();
 
             return false;
@@ -59,7 +62,13 @@ const NewFlowMessageTextBox = ({
         value={messageText}
         minRows={2}
       ></TextareaAutosize>
-      <Button className={"grow-0"} type="submit">
+      <Button
+        className={"grow-0"}
+        type="submit"
+        onClick={() => {
+          sendMessage();
+        }}
+      >
         Send
       </Button>
     </div>
@@ -114,7 +123,7 @@ export const FlowRunDisplay = withData(
       firstMessage?.senderType !== SenderType.Bot && !flowRun.completedAt;
 
     return (
-      <div className="w-full flex justify-center h-screen pb-5">
+      <div className="w-full flex justify-center h-screen pb-5 flow-run-display">
         <div className="md:w-[32rem] w-full p-4 flex flex-col gap-4 h-full justify-end">
           {debugMode ? (
             <DebugMessagesDisplay

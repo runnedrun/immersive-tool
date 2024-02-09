@@ -1,6 +1,6 @@
 import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
-import { DebugMessageDisplay } from "./DebugMessageDisplay";
 import { Flow } from "@/models/types/Flow";
+import Markdown from "react-markdown";
 
 export const MessageDisplay = ({
   message,
@@ -14,7 +14,7 @@ export const MessageDisplay = ({
   return (
     <div className="flex flex-col">
       <div className="font-bold">{senderNameString}</div>
-      <div>{message.text}</div>
+      <Markdown>{message.text}</Markdown>
     </div>
   );
 };

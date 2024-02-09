@@ -16,7 +16,7 @@ export const textToSpeechFnBaseSpec = buildBaseSpec<TextToSpeechToolParams>()({
       voice: {
         type: "string",
         description: "The voice to use",
-        enum: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
+        enum: ["fable", "alloy", "echo", "onyx", "nova", "shimmer"],
         default: "fable",
       },
     },

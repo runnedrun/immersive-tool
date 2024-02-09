@@ -4,6 +4,7 @@ import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
 import { JsonDisplay } from "./JsonDisplay";
 import classnames from "classnames";
 import { isVisibleMessage } from "./isVisibleMessage";
+import Markdown from "react-markdown";
 
 export const dataFn: DataFnType<{}, {}, { message: FlowMessage }> = ({
   props,
@@ -27,14 +28,14 @@ export const SenderTypeNameMap: Record<SenderType, string> = {
 
 export const DebugMessageDisplay = withData(dataFn, ({ data: {}, message }) => {
   const textDisplay = message.text ? (
-    <div
+    <Markdown
       className={classnames(
         { "text-gray-500": !isVisibleMessage(message) },
         "whitespace-pre-wrap"
       )}
     >
       {message.text}
-    </div>
+    </Markdown>
   ) : null;
 
   const fnCallDisplay =

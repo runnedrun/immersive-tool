@@ -1,6 +1,6 @@
 import { ValuesType } from "utility-types";
 import { FnSpecBase, FnSpecBaseWithoutParams } from "./ToolTypes";
-import { replaceAudioFnBaseSpec } from "./replaceAudioFnBaseSpec";
+import { insertAudioFnBaseSpec } from "./insertAudioFnBaseSpec";
 import { textToSpeechFnBaseSpec } from "./TextToSpeechToolParams";
 import { RunnableFunctionWithoutParse } from "openai/lib/RunnableFunction.mjs";
 
@@ -11,7 +11,7 @@ const getAvailableToolSpecs = <T extends FnSpecBaseWithoutParams[]>(
 };
 
 export const availableToolSpecs = getAvailableToolSpecs([
-  replaceAudioFnBaseSpec,
+  insertAudioFnBaseSpec,
   textToSpeechFnBaseSpec,
 ]);
 

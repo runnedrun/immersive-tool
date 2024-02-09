@@ -26,7 +26,6 @@ export const testFunction = async (testFunctionJobId: string) => {
       uid: testStepRunKey,
     } as StepRun,
     messages: [],
-    reRunFlowRunProcessor: async () => {},
   };
   const fakeRunner = {
     abort: () => {},

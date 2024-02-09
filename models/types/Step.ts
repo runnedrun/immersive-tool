@@ -22,6 +22,6 @@ export type Step = {
   preExecutionMessage?: string;
   variableDescriptions: Record<string, VariableData> | null;
   variableCollectionInstructions: string | null;
-  responseDescription: string | null;
+  responseDescription?: string | null;
   outputVariableDescriptions: Record<string, VariableData> | null;
 } & ModelBase;

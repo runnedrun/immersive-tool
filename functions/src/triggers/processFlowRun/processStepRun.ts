@@ -7,13 +7,13 @@ import {
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { runTools } from "./runTools";
 import { getSaveVariableFnSpec } from "./tools/buildSaveVariableFn";
-import { getSaveOutputVariablesFnSpec } from "./tools/buildSaveOutputVariablesFn";
 import { fbSet } from "../../helpers/fbWriters";
 import { isEmpty } from "lodash";
 import { Timestamp } from "firebase-admin/firestore";
 import { runPromptStep } from "./runPromptStep";
 import { sendFinalResponseForStep } from "./sendFinalResponseForStep";
 import { RunnableFunctionWithParse } from "openai/lib/RunnableFunction.mjs";
+import { saveOutputVariables } from "./saveOutputVariables";
 
 export type StepProcessingToolBuilder<ToolParams extends object> = (
   params: ProcessStepParams
@@ -24,7 +24,6 @@ export type ProcessStepParams = {
   currentStep: Step;
   currentStepRun: StepRun;
   allVariablesFromPreviousSteps: Record<string, string>;
-  reRunFlowRunProcessor: () => Promise<any>;
 };
 
 export type StepRunProcessor = (params: ProcessStepParams) => Promise<boolean>; // boolean for whether or not the step is complete;
@@ -52,12 +51,6 @@ const collectDataStep = async (params: ProcessStepParams) => {
     console.log("no variables to collect for", params.currentStepRun.uid);
   }
 
-  return true;
-};
-
-const saveOutputVariables: StepRunProcessor = async (params) => {
-  const tools = [getSaveOutputVariablesFnSpec(params)];
-  await runTools(tools, params, tools[0].name);
   return true;
 };
 
@@ -91,8 +84,8 @@ const runStepRunStateProcessor = async (
         [stepStateName]: Timestamp.now(),
       },
     });
-    await params.reRunFlowRunProcessor();
   }
+  return isComplete;
 };
 
 export const processStepRun = async (params: ProcessStepParams) => {

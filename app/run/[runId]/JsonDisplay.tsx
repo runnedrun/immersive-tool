@@ -6,10 +6,12 @@ export const JsonDisplay = ({
   data: Record<string, string | undefined>;
 }) => {
   return (
-    <JsonView
-      shouldExpandNode={(a) => a < 4}
-      data={data}
-      style={defaultStyles}
-    ></JsonView>
+    <div className="json-view">
+      <JsonView
+        shouldExpandNode={(a) => a < 4}
+        data={data}
+        style={defaultStyles}
+      ></JsonView>
+    </div>
   );
 };

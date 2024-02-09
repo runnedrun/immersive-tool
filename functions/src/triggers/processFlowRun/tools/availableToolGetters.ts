@@ -1,4 +1,4 @@
-import { getReplaceAudioFnSpec } from "./buildReplaceAudioFn";
+import { getInsertAudioFnSpec } from "./buildInsertAudioFn";
 import { getTextToSpeechFnSpec } from "./buildTextToSpeechFn";
 import { RunnableFunctionWithParse } from "openai/lib/RunnableFunction.mjs";
 import { ProcessStepParams } from "../processStepRun";
@@ -8,6 +8,6 @@ export const availableToolGetters: Record<
   PossibleFnNames,
   (params: ProcessStepParams) => RunnableFunctionWithParse<any>
 > = {
-  replaceAudio: getReplaceAudioFnSpec,
+  insertAudio: getInsertAudioFnSpec,
   textToSpeech: getTextToSpeechFnSpec,
 };

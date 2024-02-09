@@ -1,6 +1,6 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { runCompletionWithoutTools, runTools } from "./runTools";
-import { getReplaceAudioFnSpec } from "./tools/buildReplaceAudioFn";
+import { getInsertAudioFnSpec } from "./tools/buildInsertAudioFn";
 import { getTextToSpeechFnSpec } from "./tools/buildTextToSpeechFn";
 import { ProcessStepParams, StepRunProcessor } from "./processStepRun";
 import {
@@ -70,7 +70,7 @@ export const runPromptStep: StepRunProcessor = async (params) => {
     return true;
   }
 
-  const tools = [getReplaceAudioFnSpec(params), getTextToSpeechFnSpec(params)];
+  const tools = [getInsertAudioFnSpec(params), getTextToSpeechFnSpec(params)];
   const newMessage = getChatMessageForCompletedStepRun(params);
 
   await fbCreate(

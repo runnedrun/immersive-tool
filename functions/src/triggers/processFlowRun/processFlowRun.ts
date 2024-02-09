@@ -135,26 +135,14 @@ export const processFlowRun = async (flowRunKey: string) => {
     curStep
   );
 
-  let reRuns = 0;
-  const reRun = async () => {
-    console.log("re-running flowKey", flowRunKey, "reRuns", reRuns);
-    if (reRuns > reRunsAllowed) {
-      console.error("Too many reRuns for flowRun:", flowRunKey);
-      return;
-    }
-    reRuns++;
-    return processFlowRun(flowRunKey);
-  };
-
-  await processStepRun({
+  const shouldReRun = await processStepRun({
     messages: messagesForGPT,
     currentStep: curStep,
     currentStepRun,
     allVariablesFromPreviousSteps,
-    reRunFlowRunProcessor: reRun,
   });
 
-  console.log("processFlowRun finished", flowRunKey);
+  console.log("re-running?", shouldReRun, flowRunKey);
 
-  return false;
+  return shouldReRun;
 };

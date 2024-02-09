@@ -21,6 +21,23 @@ const getExtensions = (placeholder?: string) =>
     VariableHighlightExtension,
   ].filter(Boolean) as Extension[];
 
+function domFromText(text: string): string {
+  const dom = document.createElement("div");
+  text.split(/(?:\r\n?|\n){2,}/).forEach((block) => {
+    let p = dom.appendChild(document.createElement("p"));
+    if (block) {
+      block.split(/(?:\r\n?|\n)/).forEach((line) => {
+        if (line) {
+          if (p.hasChildNodes()) p.appendChild(document.createElement("br"));
+          p.appendChild(document.createTextNode(line));
+        }
+      });
+    }
+    dom.appendChild(p);
+  });
+  return dom.outerHTML;
+}
+
 export const PromptDisplayWithVariables = ({
   variables,
   template,
@@ -34,7 +51,7 @@ export const PromptDisplayWithVariables = ({
 }) => {
   const editor = useEditor({
     extensions: getExtensions(placeholder),
-    content: template,
+    content: domFromText(template),
     onUpdate: ({ editor }) => {
       onChange(editor.getText());
     },
