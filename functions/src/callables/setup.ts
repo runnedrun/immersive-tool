@@ -158,6 +158,67 @@ const createSmallFlow = async () => {
   );
 };
 
+const createAudioFlow = async () => {
+  const ref = await fbCreate(
+    "flow",
+    {
+      description: "This is a short audio test flow",
+      introductionMessage: "Welcome to the audio test flow",
+      title: "Test Flow",
+      aiName: "Test host",
+    },
+    { id: "2" }
+  );
+
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title: "Create a 3 sentence story about the user",
+      index: 0,
+      flowKey: ref.id,
+      template:
+        "Create a 3 sentence story about a character named {{name}}, then convert it to an audio file and send back the link.",
+      responseDescription: "Respond with the link that you just created.",
+      variableDescriptions: {
+        name: {
+          description: "the users name",
+          createdAt: Timestamp.fromMillis(1000),
+        },
+      },
+      outputVariableDescriptions: {
+        textToSpeechLink: {
+          description: "the link to the mp3 file that you just created",
+          createdAt: Timestamp.fromMillis(4000),
+        },
+      },
+    },
+    {
+      id: "3-step1",
+    }
+  );
+  // await fbCreate(
+  //   "step",
+  //   {
+  //     variableCollectionInstructions: null,
+  //     title:
+  //       "Inser the audio file into a different audio file at the given timestamp",
+  //     index: 1,
+  //     flowKey: ref.id,
+  //     template: `Insert {{textToSpeechLink}} into this file:
+  //     https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3
+  //     from timestamp 1655 seconds to timestamp 1785 seconds,
+  //     `,
+  //     responseDescription: "send back the url for the processed audio file",
+  //     variableDescriptions: null,
+  //     outputVariableDescriptions: null,
+  //   },
+  //   {
+  //     id: "3-step2",
+  //   }
+  // );
+};
+
 export const setup = onCall(async () => {
   console.log("setup");
   createBigFlow();

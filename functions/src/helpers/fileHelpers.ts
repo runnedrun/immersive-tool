@@ -30,14 +30,14 @@ export const uploadTextFile = async (
   return filename;
 };
 
-export const uploadMP3 = async (filename: string, fileContents: Buffer) => {
+export const uploadMP3 = async (filePath: string, fileContents: Buffer) => {
   const bucket = getBeStorage().bucket();
   const metadata = {
     contentType: "audio/mpeg",
     cacheControl: "public, max-age=31536000",
   };
 
-  const file = bucket.file(`pronunciationAudio/${filename}`);
+  const file = bucket.file(`pronunciationAudio/${filePath}`);
   await file.save(fileContents, {
     resumable: false,
     metadata: metadata,

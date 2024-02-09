@@ -14,10 +14,10 @@ import {
   stepRunStateOrder,
   StepRunState,
 } from "@/models/types/StepRun";
-import { ColorRing } from "react-loader-spinner";
 import { JsonView, defaultStyles } from "react-json-view-lite";
 import { JsonDisplay } from "./JsonDisplay";
 import { useEffect, useRef } from "react";
+import { ClipLoader } from "react-spinners";
 
 const groupDisplayDataFn: DataFnType<
   { step: Observable<Step | null>; stepRun: Observable<StepRun | null> },
@@ -108,7 +108,7 @@ const DebugMessageGroupDisplay = withData(
     const stepRunDataDisplay = stepRunDisplayReady ? (
       <StepDataDisplay stepRun={stepRun} step={step}></StepDataDisplay>
     ) : isPendingStep ? null : (
-      <ColorRing height={"1rem"}></ColorRing>
+      <ClipLoader size={"1rem"}></ClipLoader>
     );
 
     const messageListRef = useRef<HTMLDivElement>(null);

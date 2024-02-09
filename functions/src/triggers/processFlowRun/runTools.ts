@@ -1,16 +1,13 @@
-import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
-import { getOpenAIClient } from "../../ai/getOpenAIClient";
-import { fbCreate } from "../../helpers/fbWriters";
+import { SenderType } from "@/models/types/FlowMessage";
+import { ChatCompletionRunner } from "openai/lib/ChatCompletionRunner.mjs";
 import {
   RunnableFunction,
   RunnableToolFunction,
 } from "openai/lib/RunnableFunction.mjs";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { getOpenAIClient } from "../../ai/getOpenAIClient";
+import { fbCreate } from "../../helpers/fbWriters";
 import { ProcessStepParams } from "./processStepRun";
-import { ChatCompletionRunner } from "openai/lib/ChatCompletionRunner.mjs";
-import {
-  ChatCompletion,
-  ChatCompletionMessageParam,
-} from "openai/resources/index.mjs";
 
 const createMessageForChatCompletion = (
   message: ChatCompletionMessageParam,

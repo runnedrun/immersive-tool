@@ -17,6 +17,8 @@ import { MessageDisplay } from "./MessageDisplay";
 import { Flow } from "@/models/types/Flow";
 import { DebugMessageDisplay } from "./DebugMessageDisplay";
 import { DebugMessagesDisplay } from "./DebugMessagesDisplay";
+import { BeatLoader } from "react-spinners";
+import { FlowRun } from "@/models/types/FlowRun";
 
 const NewFlowMessageTextBox = ({
   flowRunKey,
@@ -64,8 +66,10 @@ const NewFlowMessageTextBox = ({
 const MessagesDisplay = ({
   messages,
   flow,
+  flowRun,
 }: {
   messages: FlowMessage[];
+  flowRun: FlowRun;
   flow: Flow;
 }) => {
   const messagesToDisplay = messages.filter((message) => {
@@ -80,11 +84,22 @@ const MessagesDisplay = ({
       }
     }
   }, [messagesToDisplay.length]);
+  const firstMessage = messages[0];
+  const isLoading =
+    firstMessage?.senderType !== SenderType.Bot &&
+    firstMessage?.processedForStep &&
+    !flowRun.completedAt;
+
   return (
     <div
       className="flex flex-col-reverse overflow-auto justify-start"
       ref={messageListRef}
     >
+      {isLoading && (
+        <div className="mt-2">
+          <BeatLoader></BeatLoader>
+        </div>
+      )}
       {messagesToDisplay.map((message) => {
         return (
           <MessageDisplay
@@ -110,7 +125,11 @@ export const FlowRunDisplay = withData(
               messages={messages}
             ></DebugMessagesDisplay>
           ) : (
-            <MessagesDisplay flow={flow} messages={messages}></MessagesDisplay>
+            <MessagesDisplay
+              flowRun={flowRun}
+              flow={flow}
+              messages={messages}
+            ></MessagesDisplay>
           )}
 
           <NewFlowMessageTextBox

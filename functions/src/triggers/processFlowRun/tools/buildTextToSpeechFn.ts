@@ -1,42 +1,25 @@
-import {
-  RunnableFunction,
-  RunnableFunctionWithParse,
-} from "openai/lib/RunnableFunction.mjs";
+import { uploadMP3 } from "@/functions/src/helpers/fileHelpers";
+import { RunnableFunction } from "openai/lib/RunnableFunction.mjs";
+import { SpeechCreateParams } from "openai/resources/audio/speech.mjs";
+import { synthesizeSpeechWithOpenAi } from "../../audio/synthesizeSpeech";
 import {
   ProcessStepParams,
   StepProcessingToolBuilder,
-  StepRunProcessor,
 } from "../processStepRun";
 
-type TextToSpeechToolParams = {
-  text: string;
-  voice: string;
-};
+import {
+  TextToSpeechToolParams,
+  textToSpeechFnBaseSpec,
+} from "./TextToSpeechToolParams";
+import { getAudioPath } from "./getAudioPath";
 
 export const getTextToSpeechFnSpec = (
   params: ProcessStepParams
 ): RunnableFunction<TextToSpeechToolParams> => {
   return {
     function: buildTextToSpeechFn(params),
-    description:
-      "Get a link to an MP3 file of the text spoken by the voice specified",
     parse: JSON.parse, // or use a validation library like zod for typesafe parsing.
-    parameters: {
-      type: "object",
-      properties: {
-        text: {
-          type: "string",
-          description: "The text to speak",
-        },
-        voice: {
-          type: "string",
-          description: "The voice to use",
-          enum: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
-          default: "alloy",
-        },
-      },
-    },
-    name: "textToSpeech",
+    ...textToSpeechFnBaseSpec,
   };
 };
 
@@ -45,6 +28,12 @@ export const buildTextToSpeechFn: StepProcessingToolBuilder<
 > = (params) => {
   return async (textToSpeechParams) => {
     console.log("text to speech ", textToSpeechParams);
-    return "https://www.example.com/text_to_speed.mp3";
+    const buffer = await synthesizeSpeechWithOpenAi(
+      textToSpeechParams.text,
+      textToSpeechParams.voice as SpeechCreateParams["voice"]
+    );
+
+    const url = await uploadMP3(getAudioPath(params, "text-to-speech"), buffer);
+    return url;
   };
 };

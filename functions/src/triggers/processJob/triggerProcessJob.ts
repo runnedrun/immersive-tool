@@ -6,11 +6,13 @@ import { isUndefined } from "lodash";
 import { toTimestamp } from "../../helpers/toTimestamp";
 import { fbSet } from "../../helpers/fbWriters";
 import { processFlowRun } from "../processFlowRun/processFlowRun";
+import { testFunction } from "../testFunction/testFunction";
 
 const jobTypeMap: Partial<
   Record<JobTypes, (docId: string, trigger: number) => Promise<boolean>>
 > = {
   flowRun: processFlowRun,
+  testFunctionJob: testFunction,
 };
 
 const timeoutSeconds = 540;
@@ -21,7 +23,7 @@ export const triggerProcessJob = onDocumentWritten(
     minInstances: 1,
     memory: "4GiB",
     timeoutSeconds: timeoutSeconds,
-    cpu: 2,
+    cpu: 1,
   },
   async (change) => {
     const after = (change?.data?.after?.data?.() || {}) as ProcessingJob;

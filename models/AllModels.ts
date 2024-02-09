@@ -6,6 +6,7 @@ import { FlowRun } from "./types/FlowRun";
 import { StepRun } from "./types/StepRun";
 import { ProcessingJob } from "./types/ProcessingJob";
 import { Timestamp } from "firebase/firestore";
+import { TestFunctionJob } from "./types/TestFunctionJob";
 
 export type ModelBase = {
   uid: string;
@@ -21,6 +22,7 @@ export type CollectionNameToModelType = {
   flowRun: FlowRun;
   stepRun: StepRun;
   processingJob: ProcessingJob;
+  testFunctionJob: TestFunctionJob;
 };
 
 export type AllModels = ValuesType<CollectionNameToModelType>;
@@ -32,4 +34,5 @@ export const collectionNames: (keyof CollectionNameToModelType)[] = [
   "flowRun",
   "stepRun",
   "processingJob",
+  "testFunctionJob",
 ] as const;

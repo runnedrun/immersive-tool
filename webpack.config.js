@@ -6,6 +6,7 @@ module.exports = {
   mode: process.env.WEBPACK_MODE || "development",
   entry: "./functions/src/index",
   target: "node",
+  context: path.resolve(__dirname),
   module: {
     rules: [
       {
