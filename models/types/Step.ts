@@ -19,6 +19,7 @@ export type Step = {
   flowKey: string;
   title: string;
   template: string;
+  preExecutionMessage?: string;
   variableDescriptions: Record<string, VariableData> | null;
   variableCollectionInstructions: string | null;
   responseDescription: string | null;

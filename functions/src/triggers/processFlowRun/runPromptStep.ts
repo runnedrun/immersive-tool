@@ -1,5 +1,5 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { runTools } from "./runTools";
+import { runCompletionWithoutTools, runTools } from "./runTools";
 import { getReplaceAudioFnSpec } from "./tools/buildReplaceAudioFn";
 import { getTextToSpeechFnSpec } from "./tools/buildTextToSpeechFn";
 import { ProcessStepParams, StepRunProcessor } from "./processStepRun";
@@ -35,7 +35,41 @@ const getChatMessageForCompletedStepRun = ({
   };
 };
 
+const getChatMessageForPreExecution = ({
+  currentStep,
+  currentStepRun,
+  allVariablesFromPreviousSteps,
+}: ProcessStepParams): string => {
+  const startingTemplate = currentStep.preExecutionMessage!;
+
+  const allVariablesAvailable = {
+    ...allVariablesFromPreviousSteps,
+    ...currentStepRun.variableValues,
+  };
+
+  return replaceTemplate(startingTemplate, allVariablesAvailable);
+};
+
 export const runPromptStep: StepRunProcessor = async (params) => {
+  if (params.currentStep.preExecutionMessage) {
+    const preExecutionMessage = getChatMessageForPreExecution(params);
+    await fbCreate(
+      "flowMessage",
+      getFlowMessageWithDefaults({
+        flowKey: params.currentStep.flowKey,
+        flowRunKey: params.currentStepRun.flowRunKey,
+        processedForStepRunKey: params.currentStepRun.uid,
+        processedForStep: params.currentStep.uid,
+        senderType: SenderType.Bot,
+        text: preExecutionMessage,
+      })
+    );
+  }
+
+  if (!params.currentStep.template) {
+    return true;
+  }
+
   const tools = [getReplaceAudioFnSpec(params), getTextToSpeechFnSpec(params)];
   const newMessage = getChatMessageForCompletedStepRun(params);
 
@@ -44,6 +78,8 @@ export const runPromptStep: StepRunProcessor = async (params) => {
     getFlowMessageWithDefaults({
       flowKey: params.currentStep.flowKey,
       flowRunKey: params.currentStepRun.flowRunKey,
+      processedForStepRunKey: params.currentStepRun.uid,
+      processedForStep: params.currentStep.uid,
       senderType: SenderType.System,
       text: newMessage.content as string,
     })

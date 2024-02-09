@@ -35,10 +35,21 @@ const collectDataStep = async (params: ProcessStepParams) => {
   );
 
   if (hasVariablesToCollect) {
+    fbSet("flowRun", params.currentStepRun.flowRunKey, {
+      allowInput: true,
+    });
     const tools = [getSaveVariableFnSpec(params)];
     const respSentToUser = await runTools(tools, params);
 
+    if (!respSentToUser) {
+      fbSet("flowRun", params.currentStepRun.flowRunKey, {
+        allowInput: false,
+      });
+    }
+
     return !respSentToUser;
+  } else {
+    console.log("no variables to collect for", params.currentStepRun.uid);
   }
 
   return true;

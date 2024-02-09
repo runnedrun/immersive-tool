@@ -4,10 +4,26 @@ import {
   RunnableFunction,
   RunnableToolFunction,
 } from "openai/lib/RunnableFunction.mjs";
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import {
+  ChatCompletionMessage,
+  ChatCompletionMessageParam,
+} from "openai/resources/index.mjs";
 import { getOpenAIClient } from "../../ai/getOpenAIClient";
 import { fbCreate } from "../../helpers/fbWriters";
 import { ProcessStepParams } from "./processStepRun";
+import { reverse, takeWhile } from "lodash";
+
+const tokenLimit = 1000;
+const truncateMessages = (messages: ChatCompletionMessageParam[]) => {
+  return messages;
+  const reversed = [...messages].reverse();
+  return takeWhile(reversed, (message, i, messagesSoFar) => {
+    const slice = reversed.slice(0, i);
+    const content = slice.map((m) => m.content).join("");
+    const tokenCount = content.length / 4;
+    return tokenCount < tokenLimit;
+  }).reverse();
+};
 
 const createMessageForChatCompletion = (
   message: ChatCompletionMessageParam,
@@ -95,7 +111,7 @@ export const runTools = async (
   requiredTool?: string,
   hideReturnMessages = false
 ) => {
-  const { messages, currentStepRun } = params;
+  const { messages } = params;
 
   const tools = fns.map((fn) => {
     return {
@@ -110,7 +126,7 @@ export const runTools = async (
 
   const runner = client.beta.chat.completions.runTools({
     model: "gpt-4",
-    messages: messages,
+    messages: truncateMessages(messages),
     tools,
     tool_choice: requiredTool
       ? { function: { name: requiredTool }, type: "function" }
@@ -124,26 +140,18 @@ export const runCompletionWithoutTools = async (
   params: ProcessStepParams,
   hideReturnMessages: boolean = false
 ) => {
+  console.log(
+    "messages for non tool run",
+    JSON.stringify(params.messages, null, 2)
+  );
   const client = getOpenAIClient();
   const completion = await client.chat.completions.create({
     model: "gpt-3.5-turbo",
-    messages: params.messages,
+    messages: truncateMessages(params.messages),
   });
   const message = completion.choices[0].message;
 
   await createMessageForChatCompletion(message, hideReturnMessages, params);
 
   return true;
-};
-
-export const runChatCompletion = async (
-  params: ProcessStepParams,
-  tools: RunnableFunction<any>[],
-  requiredTool?: string
-) => {
-  if (tools.length === 0) {
-    return await runCompletionWithoutTools(params);
-  } else {
-    return await runTools(tools, params, requiredTool);
-  }
 };

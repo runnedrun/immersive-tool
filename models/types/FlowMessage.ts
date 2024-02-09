@@ -8,6 +8,7 @@ export enum SenderType {
   Bot,
   ExecutionResponse,
   Introduction,
+  StepIntroducion,
   System,
   ToolCall,
   ToolResponse,

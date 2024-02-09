@@ -97,7 +97,8 @@ export const replaceAudioAtTimestamp = async ({
   await audioFileProcessingComplete;
   console.log("Audio insert completed. Uploading file");
   const outputFile = fs.readFileSync(outputFilePath);
-  fs.unlinkSync(tempFolderForThisRun);
+
+  fs.rmSync(tempFolderForThisRun, { recursive: true, force: true });
 
   return outputFile;
 };

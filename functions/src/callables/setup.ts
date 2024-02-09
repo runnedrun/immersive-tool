@@ -153,7 +153,7 @@ const createSmallFlow = async () => {
       outputVariableDescriptions: null,
     },
     {
-      id: "3-step1",
+      id: "2-step1",
     }
   );
 };
@@ -167,7 +167,7 @@ const createAudioFlow = async () => {
       title: "Test Flow",
       aiName: "Test host",
     },
-    { id: "2" }
+    { id: "3" }
   );
 
   await fbCreate(
@@ -177,9 +177,11 @@ const createAudioFlow = async () => {
       title: "Create a 3 sentence story about the user",
       index: 0,
       flowKey: ref.id,
+      preExecutionMessage: "Processing...may take a few minutes",
       template:
         "Create a 3 sentence story about a character named {{name}}, then convert it to an audio file and send back the link.",
-      responseDescription: "Respond with the link that you just created.",
+      responseDescription:
+        "Here is the link to the audio file: {{textToSpeechLink}}",
       variableDescriptions: {
         name: {
           description: "the users name",
@@ -197,30 +199,37 @@ const createAudioFlow = async () => {
       id: "3-step1",
     }
   );
-  // await fbCreate(
-  //   "step",
-  //   {
-  //     variableCollectionInstructions: null,
-  //     title:
-  //       "Inser the audio file into a different audio file at the given timestamp",
-  //     index: 1,
-  //     flowKey: ref.id,
-  //     template: `Insert {{textToSpeechLink}} into this file:
-  //     https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3
-  //     from timestamp 1655 seconds to timestamp 1785 seconds,
-  //     `,
-  //     responseDescription: "send back the url for the processed audio file",
-  //     variableDescriptions: null,
-  //     outputVariableDescriptions: null,
-  //   },
-  //   {
-  //     id: "3-step2",
-  //   }
-  // );
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title:
+        "Inser the audio file into a different audio file at the given timestamp",
+      index: 1,
+      flowKey: ref.id,
+      preExecutionMessage: "Creating audio file...",
+      template: `Insert {{textToSpeechLink}} into this file:
+      https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3
+      from timestamp 1655 seconds to timestamp 1785 seconds,
+      `,
+      responseDescription: "Here is the url: {{finalAudioLink}}",
+      variableDescriptions: null,
+      outputVariableDescriptions: {
+        finalAudioLink: {
+          description: "The link to the final audio file",
+          createdAt: Timestamp.fromMillis(4000),
+        },
+      },
+    },
+    {
+      id: "3-step2",
+    }
+  );
 };
 
 export const setup = onCall(async () => {
   console.log("setup");
   createBigFlow();
   createSmallFlow();
+  createAudioFlow();
 });

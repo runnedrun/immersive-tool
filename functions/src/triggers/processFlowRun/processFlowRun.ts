@@ -17,8 +17,6 @@ let reRunsAllowed = 30;
 export const processFlowRun = async (flowRunKey: string) => {
   const flowRun = await readDoc("flowRun", flowRunKey);
 
-  console.log("flow run", flowRun);
-
   const [steps, stepRuns, flow, unprocessedMessages] = await Promise.all([
     queryDocs("step", (q) => {
       return q
@@ -132,7 +130,10 @@ export const processFlowRun = async (flowRunKey: string) => {
     })
   );
 
-  const messagesForGPT = getMessagesForAi(updatedMessagesWithStepKeyInfo);
+  const messagesForGPT = getMessagesForAi(
+    updatedMessagesWithStepKeyInfo,
+    curStep
+  );
 
   let reRuns = 0;
   const reRun = async () => {

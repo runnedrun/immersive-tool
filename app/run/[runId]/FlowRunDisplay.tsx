@@ -23,14 +23,17 @@ import { FlowRun } from "@/models/types/FlowRun";
 const NewFlowMessageTextBox = ({
   flowRunKey,
   flowKey,
+  disabled,
 }: {
   flowRunKey: string;
   flowKey: string;
+  disabled?: boolean;
 }) => {
   const [messageText, setMessageText] = useState("");
   return (
     <div className="flex mr-2 items-end gap-2 flex-col w-full">
       <TextareaAutosize
+        disabled={disabled}
         className="w-full p-2 border-2 border-gray-300 rounded-md"
         onChange={(e) => {
           setMessageText(e.target.value);
@@ -84,22 +87,12 @@ const MessagesDisplay = ({
       }
     }
   }, [messagesToDisplay.length]);
-  const firstMessage = messages[0];
-  const isLoading =
-    firstMessage?.senderType !== SenderType.Bot &&
-    firstMessage?.processedForStep &&
-    !flowRun.completedAt;
 
   return (
     <div
       className="flex flex-col-reverse overflow-auto justify-start"
       ref={messageListRef}
     >
-      {isLoading && (
-        <div className="mt-2">
-          <BeatLoader></BeatLoader>
-        </div>
-      )}
       {messagesToDisplay.map((message) => {
         return (
           <MessageDisplay
@@ -116,6 +109,10 @@ const MessagesDisplay = ({
 export const FlowRunDisplay = withData(
   flowRunDataFn,
   ({ data: { messages, flowRun, flow, debugMode, runId } }) => {
+    const firstMessage = messages[0];
+    const isLoading =
+      firstMessage?.senderType !== SenderType.Bot && !flowRun.completedAt;
+
     return (
       <div className="w-full flex justify-center h-screen pb-5">
         <div className="md:w-[32rem] w-full p-4 flex flex-col gap-4 h-full justify-end">
@@ -132,7 +129,14 @@ export const FlowRunDisplay = withData(
             ></MessagesDisplay>
           )}
 
+          {isLoading && (
+            <div className="my-2">
+              <BeatLoader></BeatLoader>
+            </div>
+          )}
+
           <NewFlowMessageTextBox
+            disabled={!flowRun.allowInput || isLoading}
             flowRunKey={runId}
             flowKey={flowRun.flowKey}
           ></NewFlowMessageTextBox>

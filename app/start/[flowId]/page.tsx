@@ -23,6 +23,7 @@ const StartFlow = async ({
       {
         flowKey: flowId,
         completedAt: null,
+        allowInput: false,
       },
       { id: runId }
     )

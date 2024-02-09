@@ -13,4 +13,5 @@ export const getFlowIdFromFlowRunId = (flowRunId: string) => {
 export type FlowRun = {
   flowKey: string;
   completedAt: null | Timestamp;
+  allowInput: boolean;
 } & ModelBase;

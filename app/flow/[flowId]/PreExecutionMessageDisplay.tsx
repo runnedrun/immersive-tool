@@ -3,7 +3,7 @@ import { fbSet } from "@/firebase/settersFe";
 import { Step, VariableData } from "@/models/types/Step";
 import { PromptDisplayWithVariables } from "./PromptDisplayWithVariables";
 
-export const ResponseDescriptionTemplateDisplay = ({
+export const PreExecutionMessageDisplay = ({
   step,
   variablesFromPreviousSteps,
 }: {
@@ -18,16 +18,16 @@ export const ResponseDescriptionTemplateDisplay = ({
   return (
     <div className="p-2 flex-col flex gap-2">
       <div className="">
-        Exact post execution message to send to the user (optional)
+        Exactt Message to send before starting execution (optional)
       </div>
       <div>
         <PromptDisplayWithVariables
           variables={allVariablesAvailable}
-          template={step.responseDescription || ""}
+          template={step.preExecutionMessage || ""}
           onChange={(text) => {
-            fbSet("step", step.uid, { responseDescription: text });
+            fbSet("step", step.uid, { preExecutionMessage: text });
           }}
-          placeholder={"Thank you {{name}}, your request has been processed."}
+          placeholder={`Thank you {{name}}, processing.`}
         ></PromptDisplayWithVariables>
       </div>
     </div>

@@ -10,6 +10,8 @@ import { useState } from "react";
 import { StepDisplay } from "./StepDisplay";
 import { flowDataFn } from "./flowDataFn";
 import { getAllDefinedVariablesForSteps } from "./getAllDefinedVariablesForSteps";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import { ToastContainer, toast } from "react-toastify";
 
 import { ChevronLeft as ChevronLeftIcon } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -34,13 +36,13 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginLeft: `-${drawerWidth}px`,
+  marginLeft: `0`,
   ...(open && {
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: 0,
+    marginLeft: `${drawerWidth}px`,
   }),
 }));
 
@@ -118,7 +120,29 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
           <div className="flex-col flex gap-6">
             <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
               <div className="text-lg w-full">
-                <div className="bg-gray-200 p-2 rounded-md">Flow:</div>
+                <div className="bg-gray-200 p-2 rounded-md flex justify-between items-center">
+                  <div>Flow:</div>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <CopyToClipboard
+                        text={
+                          new URL(`/start/${flow.uid}`, document.baseURI).href
+                        }
+                        onCopy={() => toast("Copied")}
+                      >
+                        <Button>Copy Start Link</Button>
+                      </CopyToClipboard>
+                    </div>
+                    <div>
+                      <Button
+                        target="_blank"
+                        href={`/start/${flow.uid}?debug=true`}
+                      >
+                        Open with Debug Mode
+                      </Button>
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <Field>
                     <Label>Title</Label>

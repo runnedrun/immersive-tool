@@ -9,4 +9,5 @@ export const aiRoleMap: Record<SenderType, ChatCompletionRole> = {
   [SenderType.ToolResponse]: "tool",
   [SenderType.System]: "system",
   [SenderType.ExecutionResponse]: "assistant",
+  [SenderType.StepIntroducion]: "system",
 };

@@ -12,6 +12,7 @@ import { Timestamp } from "firebase/firestore";
 import { ResponseDescriptionTemplateDisplay } from "./ResponseDescriptionTemplateDisplay";
 import { VariableDisplay } from "./VariableDisplay";
 import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay";
+import { PreExecutionMessageDisplay } from "./PreExecutionMessageDisplay";
 
 export const StepDisplay = ({
   step,
@@ -131,28 +132,38 @@ export const StepDisplay = ({
           </div>
         </Field>
       </div>
-      <Field>
-        <Label>Extra Instructions for data collection (optional)</Label>
-        <VariableCollectionDescriptionDisplay
-          step={step}
-          variablesFromPreviousSteps={variablesFromPreviousSteps}
-        ></VariableCollectionDescriptionDisplay>
-      </Field>
-      <div className="border-gray-300 p-2 border">
-        <div className="mb-2">Variables:</div>
-        <div className="flex-col flex gap-2">{inputVariableDisplay}</div>
+      <div className="bg-slate-100 p-2">
+        <div className="text-lg font-bold mb-3">Information Collection</div>
+        <Field>
+          <VariableCollectionDescriptionDisplay
+            step={step}
+            variablesFromPreviousSteps={variablesFromPreviousSteps}
+          ></VariableCollectionDescriptionDisplay>
+        </Field>
+        <div className="border-gray-300 p-2 border">
+          <div className="mb-2">Variables:</div>
+          <div className="flex-col flex gap-2">{inputVariableDisplay}</div>
+        </div>
       </div>
-      <div>
+      <div className="bg-slate-100 p-2">
+        <div className="text-lg font-bold mb-3">Execution</div>
+        <div>
+          <PreExecutionMessageDisplay
+            step={step}
+            variablesFromPreviousSteps={variablesFromPreviousSteps}
+          ></PreExecutionMessageDisplay>
+        </div>
         <StepTemplateDisplay
           variablesFromPreviousSteps={variablesFromPreviousSteps}
           step={step}
         ></StepTemplateDisplay>
+        <div className="border-gray-300 p-2 border">
+          <div className="mb-2">Output variables for the next step:</div>
+          <div className="flex-col flex gap-2">{outputVariableDisplay}</div>
+        </div>
       </div>
-      <div className="border-gray-300 p-2 border">
-        <div className="mb-2">Output variables for the next step:</div>
-        <div className="flex-col flex gap-2">{outputVariableDisplay}</div>
-      </div>
-      <div>
+      <div className="bg-slate-100 p-2">
+        <div className="text-lg font-bold mb-3">Response</div>
         <ResponseDescriptionTemplateDisplay
           step={step}
           variablesFromPreviousSteps={variablesFromPreviousSteps}

@@ -55,7 +55,7 @@ ${requiredInfoMsg}.`
     }. The next step is step #${
       completedSteps.length + 1
     }.${stepTitleMessage}${variablesToCollectMessage}${aiIntroString}${startPrompt}`,
-    senderType: SenderType.System,
+    senderType: SenderType.StepIntroducion,
     flowKey: step.flowKey,
     processedForStep: step.uid,
     processedForStepRunKey: getStepRunId(flowRun.uid, step.uid),
