@@ -5,13 +5,14 @@ import {
   Timestamp,
 } from "firebase-admin/firestore";
 import { Timestamp as FeTimestamp } from "firebase/firestore";
-import { chunk } from "lodash";
+import { chunk, isUndefined } from "lodash";
 import { getBeFirestore } from "./getBeFirestore";
 import { CollectionNameToModelType, ModelBase } from "@/models/AllModels";
 
 export type CreateOptions = {
   id?: string;
   createdAt?: Timestamp;
+  merge?: boolean;
 };
 
 export const genExtraData = (): Omit<ModelBase, "uid"> => {
@@ -99,7 +100,9 @@ export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
     ...createdAtObj,
     ...data,
   } as CollectionNameToModelType[Key];
-  await ref.set(dataToSet, { merge: true });
+  await ref.set(dataToSet, {
+    merge: isUndefined(opts?.merge) ? true : opts.merge,
+  });
   const typed = ref as ExtendedRef<CollectionNameToModelType[Key]>;
   typed.data = { ...dataToSet, uid: ref.id } as CollectionNameToModelType[Key];
   return typed;

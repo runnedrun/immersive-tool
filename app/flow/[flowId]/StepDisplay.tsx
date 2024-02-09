@@ -14,6 +14,7 @@ import { VariableDisplay } from "./VariableDisplay";
 import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay";
 import { PreExecutionMessageDisplay } from "./PreExecutionMessageDisplay";
 import { useCallback } from "react";
+import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted";
 
 export const StepDisplay = ({
   step,

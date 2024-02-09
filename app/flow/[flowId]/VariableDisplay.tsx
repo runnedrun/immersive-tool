@@ -50,7 +50,10 @@ export const VariableDisplay = ({
           variableNamesAndDescription[variableName].description;
 
         return (
-          <div key={i} className="flex gap-2 items-center">
+          <div
+            key={variableData.createdAt.toMillis()}
+            className="flex gap-2 items-center"
+          >
             {onDelete && (
               <Button
                 color="red"

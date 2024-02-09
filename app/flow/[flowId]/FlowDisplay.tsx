@@ -177,16 +177,19 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                   <div>Flow:</div>
                   <div className="flex items-center gap-2">
                     <div>
-                      {!isServerside() && (
+                      {
                         <CopyToClipboard
                           text={
-                            new URL(`/start/${flow.uid}`, document.baseURI).href
+                            isServerside()
+                              ? "loading..."
+                              : new URL(`/start/${flow.uid}`, document.baseURI)
+                                  .href
                           }
                           onCopy={() => toast("Copied")}
                         >
                           <Button>Copy Start Link</Button>
                         </CopyToClipboard>
-                      )}
+                      }
                     </div>
                     <div>
                       <Button

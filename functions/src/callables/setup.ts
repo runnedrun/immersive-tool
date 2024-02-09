@@ -1,5 +1,5 @@
 import { onCall } from "firebase-functions/v2/https";
-import { fbCreate, fbSet } from "../helpers/fbWriters";
+import { fbCreate } from "../helpers/fbWriters";
 import { Timestamp } from "firebase-admin/firestore";
 
 const createBigFlow = async () => {
@@ -12,7 +12,7 @@ const createBigFlow = async () => {
       title: "The Show",
       aiName: "AI Host",
     },
-    { id: "1" }
+    { id: "1", merge: false }
   );
 
   await fbCreate(
@@ -61,12 +61,13 @@ const createBigFlow = async () => {
         },
         vividMemoryStory: {
           description: "The story you wrote about their memory",
-          createdAt: Timestamp.fromMillis(4000),
+          createdAt: Timestamp.fromMillis(5000),
         },
       },
     },
     {
       id: "step1",
+      merge: false,
     }
   );
   await fbCreate(
@@ -94,12 +95,13 @@ const createBigFlow = async () => {
         },
         vividMemoryAudioLink: {
           description: "The link you generated for the vivid memory audio file",
-          createdAt: Timestamp.fromMillis(4000),
+          createdAt: Timestamp.fromMillis(5000),
         },
       },
     },
     {
       id: "step2",
+      merge: false,
     }
   );
 
@@ -127,6 +129,7 @@ const createBigFlow = async () => {
     },
     {
       id: "step3",
+      merge: false,
     }
   );
   await fbCreate(
@@ -155,6 +158,7 @@ const createBigFlow = async () => {
     },
     {
       id: "step4",
+      merge: false,
     }
   );
 };
@@ -168,7 +172,7 @@ const createSmallFlow = async () => {
       title: "Test Flow",
       aiName: "Test host",
     },
-    { id: "2" }
+    { id: "2", merge: false }
   );
 
   await fbCreate(
@@ -195,6 +199,7 @@ const createSmallFlow = async () => {
     },
     {
       id: "2-step1",
+      merge: false,
     }
   );
   await fbCreate(
@@ -216,6 +221,7 @@ const createSmallFlow = async () => {
     },
     {
       id: "2-step2",
+      merge: false,
     }
   );
 };
@@ -259,6 +265,7 @@ const createAudioFlow = async () => {
     },
     {
       id: "3-step1",
+      merge: false,
     }
   );
   await fbCreate(
@@ -285,6 +292,7 @@ const createAudioFlow = async () => {
     },
     {
       id: "3-step2",
+      merge: false,
     }
   );
 };
