@@ -13,12 +13,15 @@ import { ResponseDescriptionTemplateDisplay } from "./ResponseDescriptionTemplat
 import { VariableDisplay } from "./VariableDisplay";
 import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay";
 import { PreExecutionMessageDisplay } from "./PreExecutionMessageDisplay";
+import { useCallback } from "react";
 
 export const StepDisplay = ({
   step,
   variablesFromPreviousSteps,
+  onStepDelete,
 }: {
   step: Step;
+  onStepDelete: (uid: string) => void;
   variablesFromPreviousSteps: Record<string, VariableData>;
 }) => {
   const inputVariableDisplay = !isEmpty(step.variableDescriptions) ? (
@@ -40,20 +43,46 @@ export const StepDisplay = ({
     <div className="text-sm text-gray-600">No variables defined</div>
   );
 
+  const onVariableChange = useCallback(
+    (variableName: string, description: string, oldValue: any) => {
+      fbSet("step", step.uid, {
+        outputVariableDescriptions: {
+          ...step.outputVariableDescriptions,
+          [variableName]: {
+            ...oldValue,
+            description,
+          },
+        },
+      });
+    },
+    [step.outputVariableDescriptions, step.uid]
+  );
+
+  const onNameChange = useCallback(
+    (variableName: string, oldVariableName: string, value: any) => {
+      const newOutputVariableDescriptions = {
+        ...step.outputVariableDescriptions,
+      };
+      delete newOutputVariableDescriptions[oldVariableName];
+      newOutputVariableDescriptions[variableName] = value;
+
+      fbSet(
+        "step",
+        step.uid,
+        {
+          ...step,
+          outputVariableDescriptions: newOutputVariableDescriptions,
+        },
+        { merge: false }
+      );
+    },
+    [step]
+  );
+
   const outputVariableDisplay = (
     <div>
       <VariableDisplay
-        onVariableChange={(variableName, description, oldValue) => {
-          fbSet("step", step.uid, {
-            outputVariableDescriptions: {
-              ...step.variableDescriptions,
-              [variableName]: {
-                ...oldValue,
-                description,
-              },
-            },
-          });
-        }}
+        onVariableChange={onVariableChange}
         onDelete={(variableName) => {
           const newOutputVariableDescriptions = {
             ...step.outputVariableDescriptions,
@@ -69,22 +98,7 @@ export const StepDisplay = ({
             { merge: false }
           );
         }}
-        onNameChange={(variableName, oldVariableName, value) => {
-          const newOutputVariableDescriptions = {
-            ...step.outputVariableDescriptions,
-          };
-          delete newOutputVariableDescriptions[oldVariableName];
-          newOutputVariableDescriptions[variableName] = value;
-          fbSet(
-            "step",
-            step.uid,
-            {
-              ...step,
-              outputVariableDescriptions: newOutputVariableDescriptions,
-            },
-            { merge: false }
-          );
-        }}
+        onNameChange={onNameChange}
         variableNamesAndDescription={step.outputVariableDescriptions || {}}
       ></VariableDisplay>
       <div className="flex gap-2 mt-2">
@@ -108,7 +122,7 @@ export const StepDisplay = ({
   );
 
   return (
-    <div className=" border-zinc-300 flex flex-col gap-2 p-2 bg-zinc-100">
+    <div className=" border-zinc-300 flex flex-col gap-2 p-2 bg-zinc-100 shadow-lg rounded-md">
       <div className="text-lg">Step {(step.index || 0) + 1}</div>
       <div>
         <Field>
@@ -125,6 +139,7 @@ export const StepDisplay = ({
               color="red"
               onClick={() => {
                 fbSet("step", step.uid, { archived: true });
+                onStepDelete(step.uid);
               }}
             >
               <TrashIcon></TrashIcon>

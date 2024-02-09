@@ -105,7 +105,6 @@ export const TestFunctionPanel = ({ flowId }: { flowId: string }) => {
   const [selectedFunctionName, setSelectedFunctionName] = useState<
     string | null
   >("");
-  console.log("av", availableToolSpecsByName);
   const functionNames = objKeys(availableToolSpecsByName);
   return (
     <div className="w-full overflow-auto h-full">

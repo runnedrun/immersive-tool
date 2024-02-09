@@ -24,6 +24,9 @@ import {
 import Drawer from "@mui/material/Drawer";
 import { styled } from "@mui/material/styles";
 import { TestFunctionPanel } from "./TestFunctionPanel";
+import { Step } from "@/models/types/Step";
+import { Flow } from "@/models/types/Flow";
+import { isServerside } from "@/lib/isServerSide";
 
 const drawerWidth = 450;
 
@@ -76,6 +79,56 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end",
 }));
 
+const NewStepButton = ({
+  indexOfPrevStep,
+  steps,
+  flow,
+}: {
+  indexOfPrevStep: number;
+  steps: Step[];
+  flow: Flow;
+}) => {
+  return (
+    <div className="flex justify-center">
+      <Button
+        className={"my-4 w-24"}
+        onClick={() => {
+          const newStep = {
+            flowKey: flow.uid,
+            title: "New Step",
+            index: indexOfPrevStep + 1,
+            variableCollectionInstructions: null,
+            template: "",
+            outputVariableDescriptions: null,
+            responseDescription: null,
+            variableDescriptions: null,
+          } as Step;
+          const newSteps = [...steps];
+          newSteps.splice(indexOfPrevStep + 1, 0, newStep);
+          newSteps.map((step, i) => {
+            if (i === indexOfPrevStep + 1) {
+              fbCreate("step", {
+                flowKey: flow.uid,
+                title: "New Step",
+                index: i,
+                variableCollectionInstructions: null,
+                template: "",
+                outputVariableDescriptions: null,
+                responseDescription: null,
+                variableDescriptions: null,
+              });
+            } else {
+              fbSet("step", step.uid, { index: i });
+            }
+          });
+        }}
+      >
+        <PlusIcon></PlusIcon> Step
+      </Button>
+    </div>
+  );
+};
+
 export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
   const [isOpen, setOpen] = useState(false);
   return (
@@ -124,14 +177,16 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                   <div>Flow:</div>
                   <div className="flex items-center gap-2">
                     <div>
-                      <CopyToClipboard
-                        text={
-                          new URL(`/start/${flow.uid}`, document.baseURI).href
-                        }
-                        onCopy={() => toast("Copied")}
-                      >
-                        <Button>Copy Start Link</Button>
-                      </CopyToClipboard>
+                      {!isServerside() && (
+                        <CopyToClipboard
+                          text={
+                            new URL(`/start/${flow.uid}`, document.baseURI).href
+                          }
+                          onCopy={() => toast("Copied")}
+                        >
+                          <Button>Copy Start Link</Button>
+                        </CopyToClipboard>
+                      )}
                     </div>
                     <div>
                       <Button
@@ -200,38 +255,38 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                 </div>
               </div>
             </div>
-            <div className="w-[40rem] flex flex-col gap-3 p-3 shadow-lg rounded-md">
+            <div className="w-[40rem] flex flex-col gap-3 p-3">
+              <NewStepButton
+                indexOfPrevStep={-1}
+                steps={steps}
+                flow={flow}
+              ></NewStepButton>
               <div className="flex flex-col gap-5">
                 {steps.map((step, i) => {
                   const previousSteps = steps.slice(0, i);
                   const variablesFromPreviousSteps =
                     getAllDefinedVariablesForSteps(previousSteps);
                   return (
-                    <StepDisplay
-                      key={step.uid}
-                      step={step}
-                      variablesFromPreviousSteps={variablesFromPreviousSteps}
-                    ></StepDisplay>
+                    <div key={step.uid}>
+                      <StepDisplay
+                        step={step}
+                        variablesFromPreviousSteps={variablesFromPreviousSteps}
+                        onStepDelete={(id) => {
+                          steps
+                            .filter((_) => _.uid !== id)
+                            .map((step, i) => {
+                              fbSet("step", step.uid, { index: i });
+                            });
+                        }}
+                      ></StepDisplay>
+                      <NewStepButton
+                        indexOfPrevStep={i}
+                        steps={steps}
+                        flow={flow}
+                      ></NewStepButton>
+                    </div>
                   );
                 })}
-              </div>
-              <div>
-                <Button
-                  onClick={() => {
-                    fbCreate("step", {
-                      flowKey: flow.uid,
-                      title: "New Step",
-                      index: steps.length,
-                      variableCollectionInstructions: null,
-                      template: "",
-                      outputVariableDescriptions: null,
-                      responseDescription: null,
-                      variableDescriptions: null,
-                    });
-                  }}
-                >
-                  <PlusIcon></PlusIcon> Step
-                </Button>
               </div>
             </div>
           </div>

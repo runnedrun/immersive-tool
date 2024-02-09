@@ -11,7 +11,7 @@ export const flowDataFn = ({ params }: { params: { flowId: string } }) => {
         q,
         where("flowKey", "==", params.flowId),
         where("archived", "==", false),
-        orderBy("createdAt", "asc")
+        orderBy("index", "asc")
       );
     }),
   };

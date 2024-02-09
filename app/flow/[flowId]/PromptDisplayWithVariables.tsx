@@ -9,6 +9,7 @@ import {
 } from "./VariableHighlightExtension";
 import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted";
 import { useEffect } from "react";
+import { isServerside } from "@/lib/isServerSide";
 
 const getExtensions = (placeholder?: string) =>
   [
@@ -51,7 +52,7 @@ export const PromptDisplayWithVariables = ({
 }) => {
   const editor = useEditor({
     extensions: getExtensions(placeholder),
-    content: domFromText(template),
+    content: isServerside() ? template : domFromText(template),
     onUpdate: ({ editor }) => {
       onChange(editor.getText());
     },
