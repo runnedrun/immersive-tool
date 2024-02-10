@@ -5,4 +5,5 @@ export type Flow = {
   aiName?: string;
   description?: string;
   introductionMessage: string;
+  runIdentifier?: string;
 } & ModelBase;

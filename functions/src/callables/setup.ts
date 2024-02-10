@@ -11,6 +11,7 @@ const createBigFlow = async () => {
         "Welcome to the show. We're going to collect a bit of information first. ",
       title: "The Show",
       aiName: "AI Host",
+      runIdentifier: `{{name}}-{{email}}`,
     },
     { id: "1", merge: false }
   );
@@ -171,6 +172,7 @@ const createSmallFlow = async () => {
       introductionMessage: "Welcome to the test flow",
       title: "Test Flow",
       aiName: "Test host",
+      runIdentifier: `{{name}} hi`,
     },
     { id: "2", merge: false }
   );

@@ -27,6 +27,7 @@ import { TestFunctionPanel } from "./TestFunctionPanel";
 import { Step } from "@/models/types/Step";
 import { Flow } from "@/models/types/Flow";
 import { isServerside } from "@/lib/isServerSide";
+import { FlowIdentifierDisplay } from "./FlowIdentifierDisplay";
 
 const drawerWidth = 450;
 
@@ -175,7 +176,12 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
               <div className="text-lg w-full">
                 <div className="bg-gray-200 p-2 rounded-md flex justify-between items-center">
                   <div>Flow:</div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div>
+                      <Button target="_blank" href={`/history/${flow.uid}`}>
+                        History
+                      </Button>
+                    </div>
                     <div>
                       {
                         <CopyToClipboard
@@ -201,7 +207,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     </div>
                   </div>
                 </div>
-                <div>
+                <div className="flex flex-col gap-3">
                   <Field>
                     <Label>Title</Label>
                     <Input
@@ -211,6 +217,13 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                         fbSet("flow", flow.uid, { title: e.target.value });
                       }}
                     ></Input>
+                  </Field>
+                  <Field>
+                    <Label>Flow Run Identifier (Optional)</Label>
+                    <FlowIdentifierDisplay
+                      flow={flow}
+                      steps={steps}
+                    ></FlowIdentifierDisplay>
                   </Field>
                 </div>
                 <div>

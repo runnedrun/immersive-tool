@@ -50,9 +50,12 @@ export const PromptDisplayWithVariables = ({
   onChange: (newText: string) => void;
   placeholder?: string;
 }) => {
+  const templateString = isServerside()
+    ? template
+    : domFromText(template || "");
   const editor = useEditor({
     extensions: getExtensions(placeholder),
-    content: isServerside() ? template : domFromText(template),
+    content: templateString || "",
     onUpdate: ({ editor }) => {
       onChange(editor.getText());
     },
@@ -71,7 +74,7 @@ export const PromptDisplayWithVariables = ({
   }, [variableNames, editor]);
 
   return (
-    <div className="h-full bg-white p-2 overflow-auto">
+    <div className="h-full bg-white p-2 overflow-auto text-sm">
       <EditorContent editor={editor}></EditorContent>
     </div>
   );
