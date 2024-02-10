@@ -9,6 +9,12 @@ import {
 } from "@/models/types/FlowMessage";
 import { replaceTemplate } from "./replaceTemplate";
 import { fbCreate } from "../../helpers/fbWriters";
+import { isEmpty } from "lodash";
+import {
+  buildSaveOutputVariableFn,
+  getSaveOutputVariablesFnSpec,
+  saveOutputVariablesSpecName,
+} from "./tools/buildSaveOutputVariablesFn";
 
 const getChatMessageForCompletedStepRun = ({
   currentStep,
@@ -27,10 +33,14 @@ const getChatMessageForCompletedStepRun = ({
     allVariablesAvailable
   );
 
+  const saveVariableDirection = !isEmpty(currentStep.outputVariableDescriptions)
+    ? `\n\nDo NOT return a message. Instead after executing the prompt you MUST call the ${saveOutputVariablesSpecName} function to save the output variables`
+    : ``;
+
   return {
-    content: `Variable collection complete for this step! Now please execute the following prompt:
-      ${replacedTemplate}
-      `,
+    content: `Now please execute the following prompt from the user:
+
+${replacedTemplate}${saveVariableDirection}`,
     role: "system",
   };
 };
@@ -70,7 +80,11 @@ export const runPromptStep: StepRunProcessor = async (params) => {
     return true;
   }
 
-  const tools = [getInsertAudioFnSpec(params), getTextToSpeechFnSpec(params)];
+  const tools = [
+    getInsertAudioFnSpec(params),
+    getTextToSpeechFnSpec(params),
+    getSaveOutputVariablesFnSpec(params),
+  ];
   const newMessage = getChatMessageForCompletedStepRun(params);
 
   await fbCreate(

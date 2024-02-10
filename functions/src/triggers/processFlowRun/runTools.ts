@@ -120,7 +120,11 @@ export const runTools = async (
     } as RunnableToolFunction<any>;
   });
 
-  console.log("messages", JSON.stringify(messages, null, 2));
+  console.log(
+    "messages",
+    JSON.stringify(messages, null, 2),
+    tools.map((t) => t.function.name)
+  );
 
   const client = getOpenAIClient();
 

@@ -76,6 +76,7 @@ export const buildSaveVariableFn: StepProcessingToolBuilder<
       return returnMessage;
     } else {
       runner.abort();
+      return "All variables have been collected";
     }
   };
 };

@@ -14,6 +14,8 @@ export type SaveMultipleVariablesParams = Record<string, string>;
 //   runner: ChatCompletionRunner | ChatCompletionStreamingRunner
 // ) => PromiseOrValue<unknown>;
 
+export const saveOutputVariablesSpecName = "saveOutputVariables";
+
 export const getSaveOutputVariablesFnSpec = (
   params: ProcessStepParams
 ): RunnableFunction<SaveMultipleVariablesParams> => {
@@ -29,7 +31,7 @@ export const getSaveOutputVariablesFnSpec = (
 
   return {
     function: buildSaveOutputVariableFn(params),
-    name: "saveOutputVariables",
+    name: saveOutputVariablesSpecName,
     description:
       "Save variables to the database based on the output of the most recent step",
     parse: JSON.parse, // or use a validation library like zod for typesafe parsing.

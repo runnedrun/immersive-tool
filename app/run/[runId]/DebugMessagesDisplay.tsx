@@ -130,7 +130,7 @@ const DebugMessageGroupDisplay = withData(
 
     return (
       <div
-        className="bg-gray-200 p-3 shadow-lg flex gap-3 flex-shrink-0 flex-col-reverse"
+        className="bg-gray-200 shadow-lg flex gap-3 flex-shrink-0 flex-col-reverse"
         ref={messageListRef}
       >
         {messageGroup.map((message) => {
@@ -141,7 +141,7 @@ const DebugMessageGroupDisplay = withData(
             ></DebugMessageDisplay>
           );
         })}
-        <div className="sticky top-0 bg-slate-200">
+        <div className="sticky top-0 bg-slate-100 shadow-lg p-3 text-xs">
           <div className="font-bold">{stepTitle}</div>
           <div className="mb-4">{stepRunDataDisplay}</div>
         </div>
