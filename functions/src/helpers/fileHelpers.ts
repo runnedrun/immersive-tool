@@ -37,7 +37,7 @@ export const uploadMP3 = async (filePath: string, fileContents: Buffer) => {
     cacheControl: "public, max-age=31536000",
   };
 
-  const file = bucket.file(`pronunciationAudio/${filePath}`);
+  const file = bucket.file(`${filePath}`);
   await file.save(fileContents, {
     resumable: false,
     metadata: metadata,
