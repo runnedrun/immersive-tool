@@ -72,7 +72,7 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
 
           const variableInputs: Record<GlobalVariableType, JSX.Element> = {
             [GlobalVariableType.File]: (
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full">
                 <UploadFileComponent
                   file={value.file || null}
                   fileComponentId={value.createdAt?.toMillis().toString() || ""}
