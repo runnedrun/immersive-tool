@@ -125,30 +125,37 @@ export const FlowRunDisplay = withData(
     return (
       <div className="w-full flex justify-center h-screen pb-5 flow-run-display">
         <div className="md:w-[32rem] w-full p-4 flex flex-col gap-4 h-full justify-end">
-          {debugMode ? (
-            <DebugMessagesDisplay
-              flowRunId={flowRun.uid}
-              messages={messages}
-            ></DebugMessagesDisplay>
-          ) : (
-            <MessagesDisplay
-              flowRun={flowRun}
-              flow={flow}
-              messages={messages}
-            ></MessagesDisplay>
-          )}
-
-          {isLoading && (
-            <div className="my-2">
-              <BeatLoader></BeatLoader>
+          {flowRun.isDebug && (
+            <div className="text-lg text-red-400 text-center min-h-0">
+              This is a DEBUG run
             </div>
           )}
+          <div className="min-h-0 grow flex flex-col">
+            {debugMode ? (
+              <DebugMessagesDisplay
+                flowRun={flowRun}
+                messages={messages}
+              ></DebugMessagesDisplay>
+            ) : (
+              <MessagesDisplay
+                flowRun={flowRun}
+                flow={flow}
+                messages={messages}
+              ></MessagesDisplay>
+            )}
 
-          <NewFlowMessageTextBox
-            disabled={!flowRun.allowInput || isLoading}
-            flowRunKey={runId}
-            flowKey={flowRun.flowKey}
-          ></NewFlowMessageTextBox>
+            {isLoading && (
+              <div className="my-2">
+                <BeatLoader></BeatLoader>
+              </div>
+            )}
+
+            <NewFlowMessageTextBox
+              disabled={!flowRun.allowInput || isLoading}
+              flowRunKey={runId}
+              flowKey={flowRun.flowKey}
+            ></NewFlowMessageTextBox>
+          </div>
         </div>
       </div>
     );

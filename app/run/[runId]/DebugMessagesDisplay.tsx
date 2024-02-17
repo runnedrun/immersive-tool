@@ -6,7 +6,7 @@ import { DebugMessageDisplay } from "./DebugMessageDisplay";
 import { DataFnType } from "@/data/component";
 import { Observable, of } from "rxjs";
 import { Step } from "@/models/types/Step";
-import { getObsForDoc } from "@/firebase/readerFe";
+import { getObsForDoc, readDoc } from "@/firebase/readerFe";
 import {
   StepRun,
   getNextStepRunState,
@@ -18,6 +18,15 @@ import { JsonView, defaultStyles } from "react-json-view-lite";
 import { JsonDisplay } from "./JsonDisplay";
 import { useEffect, useRef } from "react";
 import { ClipLoader } from "react-spinners";
+import { PopupMenu } from "@/components/mine/PopupMenu";
+import { fbCreate, fbSet } from "@/firebase/settersFe";
+import { FlowRun } from "@/models/types/FlowRun";
+import { Timestamp } from "firebase/firestore";
+import {
+  triggerProcessForJobNameAndId,
+  triggerProcessOnWrite,
+} from "@/data/helpers/triggerProcessOnWrite";
+import { useRouter } from "next/navigation";
 
 const groupDisplayDataFn: DataFnType<
   { step: Observable<Step | null>; stepRun: Observable<StepRun | null> },
@@ -27,6 +36,7 @@ const groupDisplayDataFn: DataFnType<
     stepId: string;
     messageGroup: FlowMessage[];
     isLatestStep: boolean;
+    duplicateFromHere: () => Promise<void>;
   }
 > = ({ props: { stepId, flowRunId } }) => {
   return {
@@ -96,7 +106,13 @@ const StepDataDisplay = ({
 
 const DebugMessageGroupDisplay = withData(
   groupDisplayDataFn,
-  ({ data: { step, stepRun }, messageGroup, isLatestStep, stepId }) => {
+  ({
+    data: { step, stepRun },
+    messageGroup,
+    isLatestStep,
+    stepId,
+    duplicateFromHere,
+  }) => {
     const stepTitle = step
       ? `Step ${step.index + 1}: ${step.title}`
       : "Pending";
@@ -142,7 +158,21 @@ const DebugMessageGroupDisplay = withData(
           );
         })}
         <div className="sticky top-0 bg-slate-100 shadow-lg p-3 text-xs">
-          <div className="font-bold">{stepTitle}</div>
+          <div className="font-bold flex items-center gap-2">
+            <div>{stepTitle}</div>
+            <div>
+              <PopupMenu
+                options={[
+                  {
+                    label: "Duplicate run from here",
+                    action: () => {
+                      return duplicateFromHere();
+                    },
+                  },
+                ]}
+              ></PopupMenu>
+            </div>
+          </div>
           <div className="mb-4">{stepRunDataDisplay}</div>
         </div>
       </div>
@@ -154,10 +184,10 @@ const pendingKey = "PENDING";
 
 export const DebugMessagesDisplay = ({
   messages,
-  flowRunId,
+  flowRun,
 }: {
   messages: FlowMessage[];
-  flowRunId: string;
+  flowRun: FlowRun;
 }) => {
   const groupedByProcessedForStep = groupBy(messages, (_) => {
     return _.processedForStep || pendingKey;
@@ -170,17 +200,65 @@ export const DebugMessagesDisplay = ({
         : -1 * value[0].createdAt.toMillis()
   );
 
+  const router = useRouter();
   return (
-    <div className="flex flex-col-reverse gap-3 overflow-auto justify-start">
+    <div className="flex flex-col-reverse gap-3 overflow-auto justify-start min-h-0 grow">
       {sortedEntries.map(([stepId, messageGroup], i) => {
+        const duplicateFromHere = async () => {
+          console.log("flow flow", flowRun);
+          const newRun = await fbCreate("flowRun", {
+            flowKey: flowRun.flowKey,
+            allowInput: true,
+            completedAt: null,
+            queryParams: flowRun.queryParams,
+            isDebug: true,
+          });
+
+          const now = Date.now();
+          let count = 0;
+          await Promise.all(
+            [...sortedEntries]
+              .reverse()
+              .slice(0, sortedEntries.length - 1 - i)
+              .map(async ([stepId, messages]) => {
+                const stepRun = await readDoc(
+                  "stepRun",
+                  getStepRunId(flowRun.uid, stepId)
+                );
+                const newStepRun = await fbCreate(
+                  "stepRun",
+                  {
+                    ...stepRun,
+                    flowRunKey: newRun.id,
+                  },
+                  { id: getStepRunId(newRun.id, stepId) }
+                );
+                return messages.map((message) => {
+                  count++;
+                  fbCreate(
+                    "flowMessage",
+                    {
+                      ...message,
+                      flowRunKey: newRun.id,
+                      processedForStepRunKey: newStepRun.id,
+                    },
+                    { createdAt: Timestamp.fromMillis(now + count) }
+                  );
+                });
+              })
+          );
+          await triggerProcessForJobNameAndId("flowRun", newRun.id);
+          window.open(`/run/${newRun.id}?debug=true`, "_blank");
+        };
         return (
           <DebugMessageGroupDisplay
             isLatestStep={i === 0}
-            flowRunId={flowRunId}
+            flowRunId={flowRun.uid}
             messageGroup={sortBy(
               messageGroup,
               (_) => -1 * _.createdAt.toMillis()
             )}
+            duplicateFromHere={duplicateFromHere}
             stepId={stepId}
             key={stepId}
           ></DebugMessageGroupDisplay>

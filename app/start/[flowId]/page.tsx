@@ -25,6 +25,7 @@ const StartFlow = async ({
         completedAt: null,
         allowInput: false,
         queryParams: searchParams,
+        isDebug: !!searchParams.debug,
       },
       { id: runId }
     )

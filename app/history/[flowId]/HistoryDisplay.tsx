@@ -10,6 +10,7 @@ import { orderBy, query, where } from "firebase/firestore";
 import { FlowRun } from "@/models/types/FlowRun";
 import { Flow } from "@/models/types/Flow";
 import Link from "next/link";
+import classNames from "classnames";
 
 const stepRunsDataFn: DataFnType<
   {
@@ -44,7 +45,9 @@ const HistoryRunDisplay = withData(
     }
 
     return (
-      <div className="text-sm">
+      <div
+        className={classNames("text-sm", { "text-gray-400": flowRun.isDebug })}
+      >
         <Link
           href={`/run/${flowRun.uid}?debug=true`}
           className="underline cursor-pointer"

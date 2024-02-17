@@ -15,4 +15,5 @@ export type FlowRun = {
   completedAt: null | Timestamp;
   allowInput: boolean;
   queryParams: Record<string, string>;
+  isDebug: boolean;
 } & ModelBase;

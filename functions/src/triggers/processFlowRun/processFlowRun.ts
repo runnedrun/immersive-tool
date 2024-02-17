@@ -62,6 +62,16 @@ export const processFlowRun = async (flowRunKey: string) => {
   const curStep = steps[currentStepIndex];
   const completedSteps = steps.slice(0, currentStepIndex);
 
+  console.log(
+    "running flow run processing",
+    flowRunKey,
+    flowRun.flowKey,
+    curStep?.uid,
+    flowRun,
+    stepRuns,
+    steps
+  );
+
   if (!curStep) {
     fbSet("flowRun", flowRunKey, {
       completedAt: Timestamp.now(),
