@@ -28,10 +28,14 @@ export const UploadFileComponent = ({
   file,
   onFile,
   flowKey,
+  fileComponentId,
+  onClick,
 }: {
   file: DocumentFile | null;
   onFile: (url: DocumentFile) => void;
   flowKey: string;
+  fileComponentId: string;
+  onClick?: () => void;
 }) => {
   const storage = getStorage();
   const [uploading, setUploading] = useState(false);
@@ -66,7 +70,7 @@ export const UploadFileComponent = ({
       <div>
         {uploading ? <CircularProgress size=".5rem"></CircularProgress> : null}
       </div>
-      <label htmlFor={`upload-file-${flowKey}`}>
+      <label htmlFor={`upload-file-${fileComponentId}`}>
         <Tooltip
           title={file?.name ? "Upload a new file" : "Upload Any type of file"}
         >
@@ -75,6 +79,7 @@ export const UploadFileComponent = ({
             variant="contained"
             color="info"
             component="span"
+            onClick={() => onClick?.()}
           >
             {file?.name ? file?.name : "Upload File"}
           </Button>
@@ -82,7 +87,7 @@ export const UploadFileComponent = ({
 
         <input
           accept="*"
-          id={`upload-file-${flowKey}`}
+          id={`upload-file-${fileComponentId}`}
           type="file"
           className="sr-only"
           onChange={uploadTextFile}

@@ -15,6 +15,8 @@ import {
   getSaveOutputVariablesFnSpec,
   saveOutputVariablesSpecName,
 } from "./tools/buildSaveOutputVariablesFn";
+import { getOverlayBackgroundAudioSpec } from "./tools/buildOverlayBackgroundAudioFn";
+import { availableToolGetters } from "./tools/availableToolGetters";
 
 const getChatMessageForCompletedStepRun = ({
   currentStep,
@@ -81,8 +83,7 @@ export const runPromptStep: StepRunProcessor = async (params) => {
   }
 
   const tools = [
-    getInsertAudioFnSpec(params),
-    getTextToSpeechFnSpec(params),
+    ...Object.values(availableToolGetters).map((getter) => getter(params)),
     getSaveOutputVariablesFnSpec(params),
   ];
   const newMessage = getChatMessageForCompletedStepRun(params);

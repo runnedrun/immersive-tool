@@ -28,7 +28,7 @@ import { Step } from "@/models/types/Step";
 import { Flow } from "@/models/types/Flow";
 import { isServerside } from "@/lib/isServerSide";
 import { FlowIdentifierDisplay } from "./FlowIdentifierDisplay";
-import { GlobalVariableDisplay } from "./VariableDisplay";
+import { GlobalVariableDisplay } from "./GlobalVariableDisplay";
 import { PopupMenu } from "@/components/mine/PopupMenu";
 import { useRouter } from "next/navigation";
 import { omit } from "lodash";
