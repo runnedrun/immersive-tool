@@ -16,6 +16,7 @@ export const FlowIdentifierDisplay = ({
       ...acc,
       ...step.variableDescriptions,
       ...step.outputVariableDescriptions,
+      ...flow.globalVariables,
     };
   }, {} as Record<string, VariableData>);
 

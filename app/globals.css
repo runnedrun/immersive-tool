@@ -20,9 +20,7 @@
   outline: none;
 }
 
-.flow-run-display {
-  a {
-    color: #1a202c;
-    text-decoration: underline;
-  }
+.flow-run-display a {
+  color: #1a202c;
+  text-decoration: underline;
 }

@@ -1,6 +1,6 @@
 import { getStepRunId } from "@/models/types/StepRun";
 import { Timestamp } from "firebase-admin/firestore";
-import { isUndefined } from "lodash";
+import { isNil, isUndefined } from "lodash";
 import { queryDocs, readDoc } from "../../helpers/fbReaders";
 import { fbCreate, fbSet } from "../../helpers/fbWriters";
 import {
@@ -11,8 +11,20 @@ import { processStepRun } from "./processStepRun";
 import { createSystemMessageForStepStart } from "./getSystemMessageForStep";
 import { getMessagesForAi } from "./getMessagesForAi";
 import { FlowMessage } from "@/models/types/FlowMessage";
+import { getVariableNamesSorted } from "./getVariableNamesSorted";
+import { GlobalVariableData, GlobalVariableType } from "@/models/types/Flow";
+import { FlowRun } from "@/models/types/FlowRun";
 
 let reRunsAllowed = 30;
+
+const globalVariableValueGetters: Record<
+  GlobalVariableType,
+  (name: string, value: GlobalVariableData, flowRun: FlowRun) => string
+> = {
+  [GlobalVariableType.File]: (name, value) => value.file?.url || "",
+  [GlobalVariableType.QueryParam]: (name, value, flowRun) =>
+    flowRun.queryParams[name] || value.defaultValue || "",
+};
 
 export const processFlowRun = async (flowRunKey: string) => {
   const flowRun = await readDoc("flowRun", flowRunKey);
@@ -73,6 +85,34 @@ export const processFlowRun = async (flowRunKey: string) => {
     };
   }, {} as Record<string, string>);
 
+  const globalVariableValues = flow.globalVariables || {};
+  const globalVariableNames = getVariableNamesSorted(globalVariableValues);
+
+  const allGlobalVariableValueStrings = globalVariableNames.reduce(
+    (acc, name) => {
+      const value = globalVariableValues[name];
+
+      if (isNil(value.type)) {
+        return acc;
+      }
+      const stringValue = globalVariableValueGetters[value.type](
+        name,
+        value,
+        flowRun
+      );
+      return {
+        ...acc,
+        [name]: stringValue,
+      };
+    },
+    {} as Record<string, string>
+  );
+
+  const allVariablesWithGlobals = {
+    ...allVariablesFromPreviousSteps,
+    ...allGlobalVariableValueStrings,
+  };
+
   if (isUndefined(currentStepRun)) {
     messages = [
       ...messages,
@@ -81,7 +121,7 @@ export const processFlowRun = async (flowRunKey: string) => {
         completedSteps,
         flowRun,
         step: curStep,
-        variableValuessFromPreviousSteps: allVariablesFromPreviousSteps,
+        variableValuessFromPreviousSteps: allVariablesWithGlobals,
       }),
     ];
 
@@ -117,13 +157,7 @@ export const processFlowRun = async (flowRunKey: string) => {
       if (!message.processedForStep) {
         message.processedForStepRunKey = currentStepRun!.uid;
         message.processedForStep = curStep.uid;
-        console.log(
-          "updating message",
-          message.uid,
-          "for step",
-          curStep.uid,
-          message.processedForStepRunKey
-        );
+
         await fbSet("flowMessage", message.uid, message);
       }
       return message;
@@ -139,7 +173,7 @@ export const processFlowRun = async (flowRunKey: string) => {
     messages: messagesForGPT,
     currentStep: curStep,
     currentStepRun,
-    allVariablesFromPreviousSteps,
+    allVariablesFromPreviousSteps: allVariablesWithGlobals,
   });
 
   console.log("re-running?", shouldReRun, flowRunKey);

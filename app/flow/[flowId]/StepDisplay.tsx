@@ -38,7 +38,7 @@ export const StepDisplay = ({
           },
         });
       }}
-      variableNamesAndDescription={step.variableDescriptions}
+      variableNamesAndValues={step.variableDescriptions}
     ></VariableDisplay>
   ) : (
     <div className="text-sm text-gray-600">No variables defined</div>
@@ -100,7 +100,7 @@ export const StepDisplay = ({
           );
         }}
         onNameChange={onNameChange}
-        variableNamesAndDescription={step.outputVariableDescriptions || {}}
+        variableNamesAndValues={step.outputVariableDescriptions || {}}
       ></VariableDisplay>
       <div className="flex gap-2 mt-2">
         <Button

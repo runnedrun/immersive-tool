@@ -10,10 +10,10 @@ import { redirect } from "next/navigation";
 
 const StartFlow = async ({
   params: { flowId },
-  searchParams: { debug },
+  searchParams,
 }: {
   params: { flowId: string };
-  searchParams: { debug: string };
+  searchParams: Record<string, string>;
 }) => {
   console.log("flowId", flowId);
   const runId = getFlowRunId(flowId);
@@ -24,12 +24,15 @@ const StartFlow = async ({
         flowKey: flowId,
         completedAt: null,
         allowInput: false,
+        queryParams: searchParams,
       },
       { id: runId }
     )
   );
 
-  const url = debug ? `/run/${ref.id}?debug=true` : `/run/${ref.id}`;
+  const url = searchParams.debug
+    ? `/run/${ref.id}?debug=true`
+    : `/run/${ref.id}`;
   redirect(url);
 };
 

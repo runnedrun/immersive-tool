@@ -28,6 +28,7 @@ import { Step } from "@/models/types/Step";
 import { Flow } from "@/models/types/Flow";
 import { isServerside } from "@/lib/isServerSide";
 import { FlowIdentifierDisplay } from "./FlowIdentifierDisplay";
+import { GlobalVariableDisplay } from "./VariableDisplay";
 
 const drawerWidth = 450;
 
@@ -173,6 +174,10 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
         <div className="flex w-full justify-center mt-20 relative">
           <div className="flex-col flex gap-6">
             <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
+              <div>Global Variables:</div>
+              <GlobalVariableDisplay flow={flow}></GlobalVariableDisplay>
+            </div>
+            <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
               <div className="text-lg w-full">
                 <div className="bg-gray-200 p-2 rounded-md flex justify-between items-center">
                   <div>Flow:</div>
@@ -281,7 +286,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                 {steps.map((step, i) => {
                   const previousSteps = steps.slice(0, i);
                   const variablesFromPreviousSteps =
-                    getAllDefinedVariablesForSteps(previousSteps);
+                    getAllDefinedVariablesForSteps(previousSteps, flow);
                   return (
                     <div key={step.uid}>
                       <StepDisplay

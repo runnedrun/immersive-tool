@@ -14,4 +14,5 @@ export type FlowRun = {
   flowKey: string;
   completedAt: null | Timestamp;
   allowInput: boolean;
+  queryParams: Record<string, string>;
 } & ModelBase;
