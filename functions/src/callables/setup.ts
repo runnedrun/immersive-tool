@@ -110,13 +110,48 @@ const createBigFlow = async () => {
     "step",
     {
       variableCollectionInstructions: null,
-      title:
-        "Insert the terrifying experience audio into a different audio file at the given timestamp",
+      title: "Overlay the background audio onto both audio files",
       index: 2,
       flowKey: ref.id,
       preExecutionMessage: "Processing audio part 1...",
+      template: `Take these two audio files:
+      terrifyingStory: {{terrifyingExperienceAudioLink}}
+      vividMemoryStory: {{vividMemoryAudioLink}}
+      And overlay the following background audio onto both of them:
+      https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Audio%20BG%20-%20Fear.mp3      
+      `,
+      outputVariableDescriptions: {
+        linkToTerrifyingStoryWithBg: {
+          description:
+            "The link to the audio file you produced with the background audio, for the terrifying story",
+          createdAt: Timestamp.fromMillis(4000),
+        },
+        linkToVividMemoryStoryWithBg: {
+          description:
+            "The link to the audio file you produced with the background audio, for the vivid memory story",
+          createdAt: Timestamp.fromMillis(5000),
+        },
+      },
+      responseDescription: null,
+      variableDescriptions: null,
+    },
+    {
+      id: "step3",
+      merge: false,
+    }
+  );
+
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title:
+        "Insert the terrifying experience audio into a different audio file at the given timestamp",
+      index: 3,
+      flowKey: ref.id,
+      preExecutionMessage: "Processing audio part 2...",
       template: `Take the given link to the given audio file to insert and insert it into the given original file, at the given timestamp:
-        file to insert: {{vividMemoryAudioLink}}
+        file to insert: {{linkToVividMemoryStoryWithBg}}
         original file:  https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3
         insertAt: 2110`,
       outputVariableDescriptions: {
@@ -129,7 +164,7 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step3",
+      id: "step4",
       merge: false,
     }
   );
@@ -139,11 +174,11 @@ const createBigFlow = async () => {
       variableCollectionInstructions: null,
       title:
         "Insert the vivid experience audio into a different audio file at the given timestamp",
-      index: 3,
+      index: 4,
       flowKey: ref.id,
-      preExecutionMessage: "Processing audio part 2...",
+      preExecutionMessage: "Processing audio part 3...",
       template: `Take the given link to the give audio file to insert and insert it into given original file, at the given timestamp:
-        file to insert: {{terrifyingExperienceAudioLink}}
+        file to insert: {{linkToTerrifyingStoryWithBg}}
         original file: {{linkToProcessedTerrifyingAudio}}
         insertAt: 1655`,
 
@@ -158,7 +193,7 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step4",
+      id: "step5",
       merge: false,
     }
   );
@@ -275,7 +310,7 @@ const createAudioFlow = async () => {
     {
       variableCollectionInstructions: null,
       title:
-        "Inser the audio file into a different audio file at the given timestamp",
+        "Insert the audio file into a different audio file at the given timestamp",
       index: 1,
       flowKey: ref.id,
       preExecutionMessage: "Creating audio file...",
