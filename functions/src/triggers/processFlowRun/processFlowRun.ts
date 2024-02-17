@@ -23,7 +23,7 @@ const globalVariableValueGetters: Record<
 > = {
   [GlobalVariableType.File]: (name, value) => value.file?.url || "",
   [GlobalVariableType.QueryParam]: (name, value, flowRun) =>
-    flowRun.queryParams[name] || value.defaultValue || "",
+    flowRun.queryParams?.[name] || value.defaultValue || "",
 };
 
 export const processFlowRun = async (flowRunKey: string) => {

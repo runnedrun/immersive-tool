@@ -204,7 +204,7 @@ export const DebugMessagesDisplay = ({
             flowKey: flowRun.flowKey,
             allowInput: true,
             completedAt: null,
-            queryParams: flowRun.queryParams,
+            queryParams: flowRun.queryParams || null,
             isDebug: true,
           });
 
