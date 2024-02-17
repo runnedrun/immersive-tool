@@ -130,14 +130,9 @@ const DebugMessageGroupDisplay = withData(
     const messageListRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
       if (messageListRef.current && (stepRunDisplayReady || isPendingStep)) {
-        console.log(
-          "nessage lsirt ref",
-          messageListRef.current.firstElementChild
-        );
         const firstChild = messageListRef.current.firstElementChild;
         if (firstChild) {
           setTimeout(() => {
-            console.log("SCROLLING");
             firstChild.scrollIntoView({ behavior: "smooth", block: "end" });
           });
         }
@@ -205,7 +200,6 @@ export const DebugMessagesDisplay = ({
     <div className="flex flex-col-reverse gap-3 overflow-auto justify-start min-h-0 grow">
       {sortedEntries.map(([stepId, messageGroup], i) => {
         const duplicateFromHere = async () => {
-          console.log("flow flow", flowRun);
           const newRun = await fbCreate("flowRun", {
             flowKey: flowRun.flowKey,
             allowInput: true,

@@ -99,7 +99,7 @@ const MessagesDisplay = ({
 
   return (
     <div
-      className="flex flex-col-reverse overflow-auto justify-start"
+      className="flex flex-col-reverse overflow-auto justify-start grow min-h-0"
       ref={messageListRef}
     >
       {messagesToDisplay.map((message) => {
