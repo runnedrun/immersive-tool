@@ -11,6 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { initFb } from "./initFb";
+import { omit } from "lodash";
 
 export type CreateOptions = {
   id?: string;
@@ -95,11 +96,14 @@ export const fbCreate = async <Key extends keyof CollectionNameToModelType>(
 
   const createdAtObj = opts?.createdAt ? { createdAt: opts.createdAt } : {};
 
-  const dataToSave = {
-    ...genExtraData(),
-    ...createdAtObj,
-    ...data,
-  } as CollectionNameToModelType[Key];
+  const dataToSave = omit(
+    {
+      ...genExtraData(),
+      ...createdAtObj,
+      ...data,
+    },
+    "uid"
+  ) as CollectionNameToModelType[Key];
 
   await setDoc(ref, dataToSave, { merge: true });
   const newRef = ref as ExtendedRef<CollectionNameToModelType[Key]>;

@@ -29,6 +29,9 @@ import { Flow } from "@/models/types/Flow";
 import { isServerside } from "@/lib/isServerSide";
 import { FlowIdentifierDisplay } from "./FlowIdentifierDisplay";
 import { GlobalVariableDisplay } from "./VariableDisplay";
+import { PopupMenu } from "@/components/mine/PopupMenu";
+import { useRouter } from "next/navigation";
+import { omit } from "lodash";
 
 const drawerWidth = 450;
 
@@ -131,8 +134,24 @@ const NewStepButton = ({
   );
 };
 
+const duplicateFlow = async (flow: Flow, steps: Step[]) => {
+  const newFlow = { ...flow, title: flow.title + " (Copy)" };
+  const newFlowRef = await fbCreate("flow", newFlow);
+  await Promise.all(
+    steps.map((step) => {
+      return fbCreate("step", {
+        ...step,
+        flowKey: newFlowRef.id,
+      });
+    })
+  );
+
+  return newFlowRef;
+};
+
 export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
   const [isOpen, setOpen] = useState(false);
+  const router = useRouter();
   return (
     <div>
       <AppBar position="fixed">
@@ -209,6 +228,22 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                       >
                         Open with Debug Mode
                       </Button>
+                    </div>
+                    <div>
+                      <PopupMenu
+                        options={[
+                          {
+                            action: async () => {
+                              const newFlowRef = await duplicateFlow(
+                                flow,
+                                steps
+                              );
+                              router.push(`/flow/${newFlowRef.id}`);
+                            },
+                            label: "Duplicate",
+                          },
+                        ]}
+                      ></PopupMenu>
                     </div>
                   </div>
                 </div>
