@@ -130,7 +130,7 @@ export const FlowRunDisplay = withData(
               This is a DEBUG run
             </div>
           )}
-          <div className="min-h-0 grow flex flex-col">
+          <div className="min-h-0 grow flex flex-col gap-2">
             {debugMode ? (
               <DebugMessagesDisplay
                 flowRun={flowRun}
