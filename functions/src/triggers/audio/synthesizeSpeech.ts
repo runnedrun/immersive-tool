@@ -9,9 +9,9 @@ export const synthesizeSpeechWithOpenAi = async (
   const openai = getOpenAIClient();
   const res = await openai.audio.speech.create({
     input: text,
-    model: "tts-1",
+    model: "tts-1-hd",
     voice: voice,
-    speed: speed,
+    speed: speed,    
   });
   return Buffer.from(await res.arrayBuffer());
 };
