@@ -129,7 +129,7 @@ export const runTools = async (
   const client = getOpenAIClient();
 
   const runner = client.beta.chat.completions.runTools({
-    model: "gpt-4",
+    model: "gpt-4o",
     messages: truncateMessages(messages),
     tools,
     tool_choice: requiredTool
