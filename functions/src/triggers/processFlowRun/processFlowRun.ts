@@ -148,6 +148,7 @@ export const processFlowRun = async (flowRunKey: string) => {
         flowRunKey,
         stepKey: curStep.uid,
         state: {
+          directFunctionRunCompletedAt: null,
           dataCollectionCompletedAt: null,
           promptCompletedAt: null,
           outputVariableSavingCompletedAt: null,

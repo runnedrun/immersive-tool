@@ -1,42 +1,42 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { Field, Label } from "@/components/ui/fieldset";
-import { Input } from "@/components/ui/input";
-import { withData } from "@/data/withData";
-import { fbCreate, fbSet } from "@/firebase/settersFe";
-import { PlusIcon } from "@heroicons/react/16/solid";
-import { useState } from "react";
-import { StepDisplay } from "./StepDisplay";
-import { flowDataFn } from "./flowDataFn";
-import { getAllDefinedVariablesForSteps } from "./getAllDefinedVariablesForSteps";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { ToastContainer, toast } from "react-toastify";
+import { Button } from "@/components/ui/button"
+import { Field, Label } from "@/components/ui/fieldset"
+import { Input } from "@/components/ui/input"
+import { withData } from "@/data/withData"
+import { fbCreate, fbSet } from "@/firebase/settersFe"
+import { PlusIcon } from "@heroicons/react/16/solid"
+import { useState } from "react"
+import { StepDisplay } from "./StepDisplay"
+import { flowDataFn } from "./flowDataFn"
+import { getAllDefinedVariablesForSteps } from "./getAllDefinedVariablesForSteps"
+import { CopyToClipboard } from "react-copy-to-clipboard"
+import { ToastContainer, toast } from "react-toastify"
 
-import { ChevronLeft as ChevronLeftIcon } from "@mui/icons-material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { ChevronLeft as ChevronLeftIcon } from "@mui/icons-material"
+import MenuIcon from "@mui/icons-material/Menu"
 import {
   IconButton,
   AppBar as MuiAppBar,
   AppBarProps as MuiAppBarProps,
   Toolbar,
-} from "@mui/material";
-import Drawer from "@mui/material/Drawer";
-import { styled } from "@mui/material/styles";
-import { TestFunctionPanel } from "./TestFunctionPanel";
-import { Step } from "@/models/types/Step";
-import { Flow } from "@/models/types/Flow";
-import { isServerside } from "@/lib/isServerSide";
-import { FlowIdentifierDisplay } from "./FlowIdentifierDisplay";
-import { GlobalVariableDisplay } from "./GlobalVariableDisplay";
-import { PopupMenu } from "@/components/mine/PopupMenu";
-import { useRouter } from "next/navigation";
-import { omit } from "lodash";
+} from "@mui/material"
+import Drawer from "@mui/material/Drawer"
+import { styled } from "@mui/material/styles"
+import { TestFunctionPanel } from "./TestFunctionPanel"
+import { Step } from "@/models/types/Step"
+import { Flow } from "@/models/types/Flow"
+import { isServerside } from "@/lib/isServerSide"
+import { FlowIdentifierDisplay } from "./FlowIdentifierDisplay"
+import { GlobalVariableDisplay } from "./GlobalVariableDisplay"
+import { PopupMenu } from "@/components/mine/PopupMenu"
+import { useRouter } from "next/navigation"
+import { omit } from "lodash"
 
-const drawerWidth = 450;
+const drawerWidth = 450
 
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
-  open?: boolean;
+  open?: boolean
 }>(({ theme, open }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
@@ -52,10 +52,10 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
     }),
     marginLeft: `${drawerWidth}px`,
   }),
-}));
+}))
 
 interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
+  open?: boolean
 }
 
 const AppBar = styled(MuiAppBar, {
@@ -73,7 +73,7 @@ const AppBar = styled(MuiAppBar, {
       duration: theme.transitions.duration.enteringScreen,
     }),
   }),
-}));
+}))
 
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -82,16 +82,16 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   justifyContent: "flex-end",
-}));
+}))
 
 const NewStepButton = ({
   indexOfPrevStep,
   steps,
   flow,
 }: {
-  indexOfPrevStep: number;
-  steps: Step[];
-  flow: Flow;
+  indexOfPrevStep: number
+  steps: Step[]
+  flow: Flow
 }) => {
   return (
     <div className="flex justify-center">
@@ -107,9 +107,9 @@ const NewStepButton = ({
             outputVariableDescriptions: null,
             responseDescription: null,
             variableDescriptions: null,
-          } as Step;
-          const newSteps = [...steps];
-          newSteps.splice(indexOfPrevStep + 1, 0, newStep);
+          } as Step
+          const newSteps = [...steps]
+          newSteps.splice(indexOfPrevStep + 1, 0, newStep)
           newSteps.map((step, i) => {
             if (i === indexOfPrevStep + 1) {
               fbCreate("step", {
@@ -121,37 +121,37 @@ const NewStepButton = ({
                 outputVariableDescriptions: null,
                 responseDescription: null,
                 variableDescriptions: null,
-              });
+              })
             } else {
-              fbSet("step", step.uid, { index: i });
+              fbSet("step", step.uid, { index: i })
             }
-          });
+          })
         }}
       >
         <PlusIcon></PlusIcon> Step
       </Button>
     </div>
-  );
-};
+  )
+}
 
 const duplicateFlow = async (flow: Flow, steps: Step[]) => {
-  const newFlow = { ...flow, title: flow.title + " (Copy)" };
-  const newFlowRef = await fbCreate("flow", newFlow);
+  const newFlow = { ...flow, title: flow.title + " (Copy)" }
+  const newFlowRef = await fbCreate("flow", newFlow)
   await Promise.all(
     steps.map((step) => {
       return fbCreate("step", {
         ...step,
         flowKey: newFlowRef.id,
-      });
+      })
     })
-  );
+  )
 
-  return newFlowRef;
-};
+  return newFlowRef
+}
 
 export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
-  const [isOpen, setOpen] = useState(false);
-  const router = useRouter();
+  const [isOpen, setOpen] = useState(false)
+  const router = useRouter()
   return (
     <div>
       <AppBar position="fixed">
@@ -190,17 +190,17 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
         <TestFunctionPanel flowId={flow.uid}></TestFunctionPanel>
       </Drawer>
       <Main open={isOpen}>
-        <div className="flex w-full justify-center mt-20 relative">
-          <div className="flex-col flex gap-6">
-            <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
+        <div className="relative mt-20 flex w-full justify-center">
+          <div className="flex flex-col gap-6">
+            <div className="flex w-[40rem] flex-col gap-3 rounded-md bg-zinc-100 p-3 shadow-lg">
               <div>Global Variables:</div>
               <GlobalVariableDisplay flow={flow}></GlobalVariableDisplay>
             </div>
-            <div className="w-[40rem] flex flex-col gap-3 p-3 bg-zinc-100 shadow-lg rounded-md">
-              <div className="text-lg w-full">
-                <div className="bg-gray-200 p-2 rounded-md flex justify-between items-center">
+            <div className="flex w-[40rem] flex-col gap-3 rounded-md bg-zinc-100 p-3 shadow-lg">
+              <div className="w-full text-lg">
+                <div className="flex items-center justify-between rounded-md bg-gray-200 p-2">
                   <div>Flow:</div>
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex flex-wrap items-center gap-2">
                     <div>
                       <Button target="_blank" href={`/history/${flow.uid}`}>
                         History
@@ -237,8 +237,8 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                               const newFlowRef = await duplicateFlow(
                                 flow,
                                 steps
-                              );
-                              router.push(`/flow/${newFlowRef.id}`);
+                              )
+                              router.push(`/flow/${newFlowRef.id}`)
                             },
                             label: "Duplicate",
                           },
@@ -254,7 +254,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                       className={"border-none"}
                       value={flow.title || ""}
                       onChange={(e) => {
-                        fbSet("flow", flow.uid, { title: e.target.value });
+                        fbSet("flow", flow.uid, { title: e.target.value })
                       }}
                     ></Input>
                   </Field>
@@ -276,7 +276,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                       value={flow.aiName || ""}
                       placeholder="AI Helper"
                       onChange={(e) => {
-                        fbSet("flow", flow.uid, { aiName: e.target.value });
+                        fbSet("flow", flow.uid, { aiName: e.target.value })
                       }}
                     ></Input>
                   </Field>
@@ -290,7 +290,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                       onChange={(e) => {
                         fbSet("flow", flow.uid, {
                           description: e.target.value,
-                        });
+                        })
                       }}
                     ></Input>
                   </Field>
@@ -304,14 +304,14 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                       onChange={(e) => {
                         fbSet("flow", flow.uid, {
                           introductionMessage: e.target.value,
-                        });
+                        })
                       }}
                     ></Input>
                   </Field>
                 </div>
               </div>
             </div>
-            <div className="w-[40rem] flex flex-col gap-3 p-3">
+            <div className="flex w-[40rem] flex-col gap-3 p-3">
               <NewStepButton
                 indexOfPrevStep={-1}
                 steps={steps}
@@ -319,9 +319,9 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
               ></NewStepButton>
               <div className="flex flex-col gap-5">
                 {steps.map((step, i) => {
-                  const previousSteps = steps.slice(0, i);
+                  const previousSteps = steps.slice(0, i)
                   const variablesFromPreviousSteps =
-                    getAllDefinedVariablesForSteps(previousSteps, flow);
+                    getAllDefinedVariablesForSteps(previousSteps, flow)
                   return (
                     <div key={step.uid}>
                       <StepDisplay
@@ -331,8 +331,8 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                           steps
                             .filter((_) => _.uid !== id)
                             .map((step, i) => {
-                              fbSet("step", step.uid, { index: i });
-                            });
+                              fbSet("step", step.uid, { index: i })
+                            })
                         }}
                       ></StepDisplay>
                       <NewStepButton
@@ -341,7 +341,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                         flow={flow}
                       ></NewStepButton>
                     </div>
-                  );
+                  )
                 })}
               </div>
             </div>
@@ -349,5 +349,5 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
         </div>
       </Main>
     </div>
-  );
-});
+  )
+})

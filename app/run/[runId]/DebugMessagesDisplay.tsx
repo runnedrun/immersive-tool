@@ -49,6 +49,7 @@ const groupDisplayDataFn: DataFnType<
 
 const finishedText = "Step Completed";
 const stepStatePrettyNameMap: Record<keyof StepRunState, string> = {
+  directFunctionRunCompletedAt: "Directly running function",
   dataCollectionCompletedAt: "Collecting Data From User",
   promptCompletedAt: "Executing Prompt",
   outputVariableSavingCompletedAt: "Saving Output Variables",

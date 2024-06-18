@@ -1,6 +1,6 @@
-import { onCall } from "firebase-functions/v2/https";
-import { fbCreate } from "../helpers/fbWriters";
-import { Timestamp } from "firebase-admin/firestore";
+import { onCall } from "firebase-functions/v2/https"
+import { fbCreate } from "../helpers/fbWriters"
+import { Timestamp } from "firebase-admin/firestore"
 
 const createBigFlow = async () => {
   const ref = await fbCreate(
@@ -14,7 +14,7 @@ const createBigFlow = async () => {
       runIdentifier: `{{name}}-{{email}}`,
     },
     { id: "1", merge: false }
-  );
+  )
 
   await fbCreate(
     "step",
@@ -70,48 +70,82 @@ const createBigFlow = async () => {
       id: "step1",
       merge: false,
     }
-  );
+  )
   await fbCreate(
     "step",
     {
       variableCollectionInstructions: null,
-      title: "Turn the stories from the previous steps into audio files",
+      title:
+        "Turn the terrifying story from the previous steps into a audio file",
       index: 1,
       flowKey: ref.id,
       preExecutionMessage: "Creating audio",
-      template: `Take the the two stories below and turn them into audio mp3 files, using the fable voice:
-        terrifying experience story: {{terrifyingExperienceStory}}
-        vivid memory story: {{vividMemoryStory}}
-        
-        Return the links to the audio files like this:
-        terrifyingExperienceLink: 
-        vividMemoryLink: `,
+      // template: `Take the the two stories below and turn them into audio mp3 files, using the fable voice:
+      //   terrifying experience story: {{terrifyingExperienceStory}}
+      //   vivid memory story: {{vividMemoryStory}}
+
+      //   Return the links to the audio files like this:
+      //   terrifyingExperienceLink:
+      //   vividMemoryLink: `,
+      template: null,
       responseDescription: null,
       variableDescriptions: null,
-      outputVariableDescriptions: {
-        terrifyingExperienceAudioLink: {
-          description:
-            "The link you generated for the terrifying experience audio file",
-          createdAt: Timestamp.fromMillis(4000),
+      isDirectFunctionCall: true,
+      functionInformation: {
+        name: "textToSpeech",
+        args: {
+          text: `{{terrifyingExperienceStory}}`,
+          voice: "fable",
         },
-        vividMemoryAudioLink: {
-          description: "The link you generated for the vivid memory audio file",
-          createdAt: Timestamp.fromMillis(5000),
-        },
+        responseVariableName: `terrifyingExperienceAudioLink`,
       },
     },
     {
       id: "step2",
       merge: false,
     }
-  );
+  )
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title:
+        "Turn the vivid memory story from the previous step into an audio file",
+      index: 2,
+      flowKey: ref.id,
+      preExecutionMessage: "Creating audio",
+      // template: `Take the the two stories below and turn them into audio mp3 files, using the fable voice:
+      //   terrifying experience story: {{terrifyingExperienceStory}}
+      //   vivid memory story: {{vividMemoryStory}}
+
+      //   Return the links to the audio files like this:
+      //   terrifyingExperienceLink:
+      //   vividMemoryLink: `,
+      template: null,
+      responseDescription: null,
+      variableDescriptions: null,
+      isDirectFunctionCall: true,
+      functionInformation: {
+        name: "textToSpeech",
+        args: {
+          text: `{{vividMemoryStory}}`,
+          voice: "fable",
+        },
+        responseVariableName: `vividMemoryLink`,
+      },
+    },
+    {
+      id: "step3",
+      merge: false,
+    }
+  )
 
   await fbCreate(
     "step",
     {
       variableCollectionInstructions: null,
       title: "Overlay the background audio onto both audio files",
-      index: 2,
+      index: 3,
       flowKey: ref.id,
       preExecutionMessage: "Processing audio part 1...",
       template: `Take these two audio files:
@@ -136,10 +170,10 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step3",
+      id: "step4",
       merge: false,
     }
-  );
+  )
 
   await fbCreate(
     "step",
@@ -147,7 +181,7 @@ const createBigFlow = async () => {
       variableCollectionInstructions: null,
       title:
         "Insert the terrifying experience audio into a different audio file at the given timestamp",
-      index: 3,
+      index: 4,
       flowKey: ref.id,
       preExecutionMessage: "Processing audio part 2...",
       template: `Take the given link to the given audio file to insert and insert it into the given original file, at the given timestamp:
@@ -164,17 +198,17 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step4",
+      id: "step5",
       merge: false,
     }
-  );
+  )
   await fbCreate(
     "step",
     {
       variableCollectionInstructions: null,
       title:
         "Insert the vivid experience audio into a different audio file at the given timestamp",
-      index: 4,
+      index: 5,
       flowKey: ref.id,
       preExecutionMessage: "Processing audio part 3...",
       template: `Take the given link to the give audio file to insert and insert it into given original file, at the given timestamp:
@@ -193,11 +227,11 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step5",
+      id: "step6",
       merge: false,
     }
-  );
-};
+  )
+}
 
 const createSmallFlow = async () => {
   const ref = await fbCreate(
@@ -210,7 +244,7 @@ const createSmallFlow = async () => {
       runIdentifier: `{{name}} hi`,
     },
     { id: "2", merge: false }
-  );
+  )
 
   await fbCreate(
     "step",
@@ -238,7 +272,7 @@ const createSmallFlow = async () => {
       id: "2-step1",
       merge: false,
     }
-  );
+  )
   await fbCreate(
     "step",
     {
@@ -260,8 +294,8 @@ const createSmallFlow = async () => {
       id: "2-step2",
       merge: false,
     }
-  );
-};
+  )
+}
 
 const createAudioFlow = async () => {
   const ref = await fbCreate(
@@ -273,7 +307,7 @@ const createAudioFlow = async () => {
       aiName: "Test host",
     },
     { id: "3" }
-  );
+  )
 
   await fbCreate(
     "step",
@@ -304,7 +338,7 @@ const createAudioFlow = async () => {
       id: "3-step1",
       merge: false,
     }
-  );
+  )
   await fbCreate(
     "step",
     {
@@ -331,12 +365,12 @@ const createAudioFlow = async () => {
       id: "3-step2",
       merge: false,
     }
-  );
-};
+  )
+}
 
 export const setup = onCall(async () => {
-  console.log("setup");
-  createBigFlow();
-  createSmallFlow();
-  createAudioFlow();
-});
+  console.log("setup")
+  createBigFlow()
+  createSmallFlow()
+  createAudioFlow()
+})

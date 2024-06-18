@@ -5,6 +5,7 @@ export const getStepRunKey = (flowRunKey: string, stepKey: string) =>
   `${flowRunKey}_${stepKey}`;
 
 export type StepRunState = {
+  directFunctionRunCompletedAt: Timestamp | null;
   dataCollectionCompletedAt: Timestamp | null;
   promptCompletedAt: Timestamp | null;
   outputVariableSavingCompletedAt: Timestamp | null;
@@ -13,6 +14,7 @@ export type StepRunState = {
 };
 
 export const stepRunStateOrder: (keyof StepRunState)[] = [
+  "directFunctionRunCompletedAt",
   "dataCollectionCompletedAt",
   "promptCompletedAt",
   "outputVariableSavingCompletedAt",
