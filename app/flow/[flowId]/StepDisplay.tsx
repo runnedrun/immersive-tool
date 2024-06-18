@@ -154,13 +154,18 @@ export const StepDisplay = ({
       },
     }
 
+    const allVariables = {
+      ...variablesFromPreviousSteps,
+      ...step.variableDescriptions,
+    }
+
     const CustomFormTextWidget = useMemo(
       () => (props: WidgetProps) => {
         return (
           <div className="flex flex-col gap-2">
             <div>{props.name}</div>
             <PromptDisplayWithVariables
-              variables={variablesFromPreviousSteps}
+              variables={allVariables}
               template={props.value || ""}
               placeholder="e.g. Send an email to {{email}} with the subject {{subject}}."
               onChange={(text) => {
@@ -170,7 +175,7 @@ export const StepDisplay = ({
           </div>
         )
       },
-      [JSON.stringify(variablesFromPreviousSteps)]
+      [JSON.stringify(allVariables)]
     )
 
     const widgets: RegistryWidgetsType = {

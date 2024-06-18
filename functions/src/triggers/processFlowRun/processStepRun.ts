@@ -53,7 +53,10 @@ const collectDataStep = async (params: ProcessStepParams) => {
 }
 
 const directlyRunFunction = async (params: ProcessStepParams) => {
-  if (!params.currentStep.functionInformation?.name) {
+  if (
+    !params.currentStep.functionInformation?.name &&
+    params.currentStep.isDirectFunctionCall
+  ) {
     await fbSet("stepRun", params.currentStepRun.uid, {
       state: {
         directFunctionRunCompletedAt: Timestamp.now(),
@@ -95,10 +98,10 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
     return false
   }
 
-  if (params.currentStep.functionInformation.responseVariableName) {
+  if (params.currentStep.functionInformation?.responseVariableName) {
     await fbSet("stepRun", params.currentStepRun.uid, {
       variableValues: {
-        [params.currentStep.functionInformation.responseVariableName]:
+        [params.currentStep.functionInformation?.responseVariableName]:
           resp as string,
       },
     })

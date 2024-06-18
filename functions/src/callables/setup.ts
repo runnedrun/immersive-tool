@@ -268,20 +268,11 @@ const createBigFlow = async () => {
       index: 6,
       flowKey: ref.id,
       preExecutionMessage: "Processing audio part 3...",
-      // template: `Take the given link to the give audio file to insert and insert it into given original file, at the given timestamp:
-      //   file to insert: {{linkToTerrifyingStoryWithBg}}
-      //   original file: {{linkToProcessedTerrifyingAudio}}
-      //   insertAt: 1655`,
       template: null,
-      // outputVariableDescriptions: {
-      //   linkToFullyProcessedAudio: {
-      //     description: "The link to the processed audio file you just produced",
-      //     createdAt: Timestamp.fromMillis(4000),
-      //   },
-      // },
+      isDirectFunctionCall: true,
       functionInformation: {
         args: {
-          originalFileLink: "{{linkToProcessedTerrifyingAudio}}",
+          originalFileLink: "{{linkToProcessedVividAudio}}",
           audioToInsertLink: "{{linkToTerrifyingStoryWithBg}}",
           insertAtSeconds: "2110",
         },

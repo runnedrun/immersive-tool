@@ -1,9 +1,9 @@
 "use client"
 import { fbSet } from "@/firebase/settersFe"
 import { Step, VariableData } from "@/models/types/Step"
+import { Timestamp } from "firebase/firestore"
 import { isEqual, uniq } from "lodash"
 import { PromptDisplayWithVariables } from "./PromptDisplayWithVariables"
-import { Timestamp } from "firebase/firestore"
 
 export const getVariablesFromTemplate = (template: string) => {
   const regex = /{{(.*?)}}/g
@@ -23,6 +23,7 @@ export const StepTemplateDisplay = ({
     ...variablesFromPreviousSteps,
     ...step.variableDescriptions,
   }
+
   return (
     <div className="p-2">
       <div>Prompt</div>
