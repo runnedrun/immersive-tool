@@ -19,6 +19,7 @@ import { availableToolGetters } from "./tools/availableToolGetters"
 import { ChatCompletionRunner } from "openai/lib/ChatCompletionRunner.mjs"
 import { deepMapObj } from "@/lib/helpers/deepMapObj"
 import { replaceTemplate } from "./replaceTemplate"
+import { checkForFlowRunCancelled } from "./processFlowRun"
 
 export type StepProcessingToolBuilder<ToolParams extends object> = (
   params: ProcessStepParams
@@ -29,6 +30,7 @@ export type ProcessStepParams = {
   currentStep: Step
   currentStepRun: StepRun
   allVariablesFromPreviousSteps: Record<string, string>
+  triggeredTime: number
 }
 
 export type StepRunProcessor = (params: ProcessStepParams) => Promise<boolean> // boolean for whether or not the step is complete;
@@ -39,17 +41,8 @@ const collectDataStep = async (params: ProcessStepParams) => {
   )
 
   if (hasVariablesToCollect) {
-    await fbSet("flowRun", params.currentStepRun.flowRunKey, {
-      allowInput: true,
-    })
     const tools = [getSaveVariableFnSpec(params)]
     const respSentToUser = await runTools(tools, params)
-
-    if (!respSentToUser) {
-      await fbSet("flowRun", params.currentStepRun.flowRunKey, {
-        allowInput: false,
-      })
-    }
 
     return !respSentToUser
   } else {
@@ -92,6 +85,15 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
   })
 
   const resp = await functionToRun.function(argsWithReplacement, fakeRunner)
+
+  if (
+    await checkForFlowRunCancelled(
+      params.currentStepRun.flowRunKey,
+      params.triggeredTime
+    )
+  ) {
+    return false
+  }
 
   if (params.currentStep.functionInformation.responseVariableName) {
     await fbSet("stepRun", params.currentStepRun.uid, {

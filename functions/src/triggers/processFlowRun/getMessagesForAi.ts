@@ -1,24 +1,24 @@
-import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { aiRoleMap } from "../aiRoleMap";
-import { Step } from "@/models/types/Step";
-import { Send } from "@mui/icons-material";
+import { FlowMessage, SenderType } from "@/models/types/FlowMessage"
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs"
+import { aiRoleMap } from "../aiRoleMap"
+import { Step } from "@/models/types/Step"
+import { Send } from "@mui/icons-material"
 
 export const getMessagesForAi = (
   messages: FlowMessage[],
   currentStep: Step
 ) => {
-  let stepIdToIgnore = "";
+  let stepIdToIgnore = ""
   const aiMessages = messages.flatMap((message) => {
-    const messagesToReturn = [] as ChatCompletionMessageParam[];
+    const messagesToReturn = [] as ChatCompletionMessageParam[]
     if (message.senderType === SenderType.StepIntroducion) {
-      const stepKey = message.processedForStep!;
+      const stepKey = message.processedForStep!
       if (stepKey !== currentStep.uid) {
-        stepIdToIgnore = stepKey;
+        stepIdToIgnore = stepKey
         messagesToReturn.push({
           role: "system",
           content: `This step completed, contents hidden.`,
-        } as ChatCompletionMessageParam);
+        } as ChatCompletionMessageParam)
       }
     }
     if (message.processedForStep !== stepIdToIgnore) {
@@ -29,10 +29,10 @@ export const getMessagesForAi = (
           ? JSON.parse(message.toolCallsJSON)
           : undefined,
         tool_call_id: message.toolCallId ?? undefined,
-      } as ChatCompletionMessageParam);
+      } as ChatCompletionMessageParam)
     }
-    return messagesToReturn;
-  });
+    return messagesToReturn
+  })
 
-  return aiMessages;
-};
+  return aiMessages
+}

@@ -80,6 +80,7 @@ const createBigFlow = async () => {
       index: 1,
       flowKey: ref.id,
       preExecutionMessage: "Creating audio",
+      runInParallelWithNextStep: true,
       // template: `Take the the two stories below and turn them into audio mp3 files, using the fable voice:
       //   terrifying experience story: {{terrifyingExperienceStory}}
       //   vivid memory story: {{vividMemoryStory}}
@@ -144,28 +145,39 @@ const createBigFlow = async () => {
     "step",
     {
       variableCollectionInstructions: null,
-      title: "Overlay the background audio onto both audio files",
+      title: "Overlay the background audio onto terrifying audio",
       index: 3,
       flowKey: ref.id,
       preExecutionMessage: "Processing audio part 1...",
-      template: `Take these two audio files:
-      terrifyingStory: {{terrifyingExperienceAudioLink}}
-      vividMemoryStory: {{vividMemoryAudioLink}}
-      And overlay the following background audio onto both of them:
-      https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Audio%20BG%20-%20Fear.mp3      
-      `,
-      outputVariableDescriptions: {
-        linkToTerrifyingStoryWithBg: {
-          description:
-            "The link to the audio file you produced with the background audio, for the terrifying story",
-          createdAt: Timestamp.fromMillis(4000),
+      // template: `Take these two audio files:
+      // terrifyingStory: {{terrifyingExperienceAudioLink}}
+      // vividMemoryStory: {{vividMemoryAudioLink}}
+      // And overlay the following background audio onto both of them:
+      // https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Audio%20BG%20-%20Fear.mp3
+      // `,
+      template: null,
+      runInParallelWithNextStep: true,
+      isDirectFunctionCall: true,
+      functionInformation: {
+        args: {
+          originalFileLink: `{{terrifyingExperienceAudioLink}}`,
+          linkToFileToOverlay: ` https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Audio%20BG%20-%20Fear.mp3`,
         },
-        linkToVividMemoryStoryWithBg: {
-          description:
-            "The link to the audio file you produced with the background audio, for the vivid memory story",
-          createdAt: Timestamp.fromMillis(5000),
-        },
+        name: "overlayBackgroundAudio",
+        responseVariableName: "linkToTerrifyingStoryWithBg",
       },
+      // outputVariableDescriptions: {
+      //   : {
+      //     description:
+      //       "The link to the audio file you produced with the background audio, for the terrifying story",
+      //     createdAt: Timestamp.fromMillis(4000),
+      //   },
+      //   linkToVividMemoryStoryWithBg: {
+      //     description:
+      //       "The link to the audio file you produced with the background audio, for the vivid memory story",
+      //     createdAt: Timestamp.fromMillis(5000),
+      //   },
+      // },
       responseDescription: null,
       variableDescriptions: null,
     },
@@ -179,20 +191,25 @@ const createBigFlow = async () => {
     "step",
     {
       variableCollectionInstructions: null,
-      title:
-        "Insert the terrifying experience audio into a different audio file at the given timestamp",
+      title: "Overlay the background audio onto vivid audio",
       index: 4,
       flowKey: ref.id,
-      preExecutionMessage: "Processing audio part 2...",
-      template: `Take the given link to the given audio file to insert and insert it into the given original file, at the given timestamp:
-        file to insert: {{linkToVividMemoryStoryWithBg}}
-        original file:  https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3
-        insertAt: 2110`,
-      outputVariableDescriptions: {
-        linkToProcessedTerrifyingAudio: {
-          description: "The link to the processed audio file you just produced",
-          createdAt: Timestamp.fromMillis(4000),
+      preExecutionMessage: "Processing audio part 1...",
+      // template: `Take these two audio files:
+      // terrifyingStory: {{terrifyingExperienceAudioLink}}
+      // vividMemoryStory: {{vividMemoryAudioLink}}
+      // And overlay the following background audio onto both of them:
+      // https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Audio%20BG%20-%20Fear.mp3
+      // `,
+      template: null,
+      isDirectFunctionCall: true,
+      functionInformation: {
+        args: {
+          originalFileLink: `{{vividMemoryLink}}`,
+          linkToFileToOverlay: ` https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Audio%20BG%20-%20Fear.mp3`,
         },
+        name: "overlayBackgroundAudio",
+        responseVariableName: "linkToVividMemoryStoryWithBg",
       },
       responseDescription: null,
       variableDescriptions: null,
@@ -202,6 +219,7 @@ const createBigFlow = async () => {
       merge: false,
     }
   )
+
   await fbCreate(
     "step",
     {
@@ -210,24 +228,72 @@ const createBigFlow = async () => {
         "Insert the vivid experience audio into a different audio file at the given timestamp",
       index: 5,
       flowKey: ref.id,
-      preExecutionMessage: "Processing audio part 3...",
-      template: `Take the given link to the give audio file to insert and insert it into given original file, at the given timestamp:
-        file to insert: {{linkToTerrifyingStoryWithBg}}
-        original file: {{linkToProcessedTerrifyingAudio}}
-        insertAt: 1655`,
-
-      outputVariableDescriptions: {
-        linkToFullyProcessedAudio: {
-          description: "The link to the processed audio file you just produced",
-          createdAt: Timestamp.fromMillis(4000),
+      preExecutionMessage: "Processing audio part 2...",
+      // template: `Take the given link to the given audio file to insert and insert it into the given original file, at the given timestamp:
+      //   file to insert: {{linkToVividMemoryStoryWithBg}}
+      //   original file:  https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3
+      //   insertAt: 2110`,
+      template: null,
+      // outputVariableDescriptions: {
+      //   linkToProcessedTerrifyingAudio: {
+      //     description: "The link to the processed audio file you just produced",
+      //     createdAt: Timestamp.fromMillis(4000),
+      //   },
+      // },
+      isDirectFunctionCall: true,
+      functionInformation: {
+        name: "insertAudio",
+        args: {
+          originalFileLink:
+            "https://storage.googleapis.com/immersive-b573e.appspot.com/static_files/TWR%20-%20Track%203%20-%20Fable%20-%20test%20audio%20(1).mp3",
+          audioToInsertLink: "{{linkToVividMemoryStoryWithBg}}",
+          insertAtSeconds: "2110",
         },
+        responseVariableName: `linkToProcessedVividAudio`,
+      },
+      responseDescription: null,
+      variableDescriptions: null,
+    },
+    {
+      id: "step6",
+      merge: false,
+    }
+  )
+  await fbCreate(
+    "step",
+    {
+      variableCollectionInstructions: null,
+      title:
+        "Insert the terrifying experience audio into a different audio file at the given timestamp",
+      index: 6,
+      flowKey: ref.id,
+      preExecutionMessage: "Processing audio part 3...",
+      // template: `Take the given link to the give audio file to insert and insert it into given original file, at the given timestamp:
+      //   file to insert: {{linkToTerrifyingStoryWithBg}}
+      //   original file: {{linkToProcessedTerrifyingAudio}}
+      //   insertAt: 1655`,
+      template: null,
+      // outputVariableDescriptions: {
+      //   linkToFullyProcessedAudio: {
+      //     description: "The link to the processed audio file you just produced",
+      //     createdAt: Timestamp.fromMillis(4000),
+      //   },
+      // },
+      functionInformation: {
+        args: {
+          originalFileLink: "{{linkToProcessedTerrifyingAudio}}",
+          audioToInsertLink: "{{linkToTerrifyingStoryWithBg}}",
+          insertAtSeconds: "2110",
+        },
+        name: "insertAudio",
+        responseVariableName: "linkToFullyProcessedAudio",
       },
       responseDescription:
         "Your [audio experience]({{linkToFullyProcessedAudio}}) is ready",
       variableDescriptions: null,
     },
     {
-      id: "step6",
+      id: "step7",
       merge: false,
     }
   )

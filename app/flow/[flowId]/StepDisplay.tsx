@@ -13,7 +13,7 @@ import { ResponseDescriptionTemplateDisplay } from "./ResponseDescriptionTemplat
 import { VariableDisplay } from "./VariableDisplay"
 import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay"
 import { PreExecutionMessageDisplay } from "./PreExecutionMessageDisplay"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted"
 import { objKeys } from "@/lib/helpers/objKeys"
 import { availableToolSpecsByName } from "@/functions/src/triggers/processFlowRun/tools/availableTools"
@@ -26,8 +26,14 @@ import {
   ToggleButtonGroup,
 } from "@mui/material"
 import { Form } from "@rjsf/mui"
-import { RJSFSchema } from "@rjsf/utils"
+import {
+  RJSFSchema,
+  RegistryWidgetsType,
+  UiSchema,
+  WidgetProps,
+} from "@rjsf/utils"
 import validator from "@rjsf/validator-ajv8"
+import { PromptDisplayWithVariables } from "./PromptDisplayWithVariables"
 
 export const StepDisplay = ({
   step,
@@ -141,6 +147,36 @@ export const StepDisplay = ({
     const functionSpec = step.functionInformation?.name
       ? availableToolSpecsByName[step.functionInformation?.name]
       : null
+
+    const formUISchema: UiSchema = {
+      "ui:submitButtonOptions": {
+        norender: true,
+      },
+    }
+
+    const CustomFormTextWidget = useMemo(
+      () => (props: WidgetProps) => {
+        return (
+          <div className="flex flex-col gap-2">
+            <div>{props.name}</div>
+            <PromptDisplayWithVariables
+              variables={variablesFromPreviousSteps}
+              template={props.value || ""}
+              placeholder="e.g. Send an email to {{email}} with the subject {{subject}}."
+              onChange={(text) => {
+                props.onChange(text)
+              }}
+            ></PromptDisplayWithVariables>
+          </div>
+        )
+      },
+      [JSON.stringify(variablesFromPreviousSteps)]
+    )
+
+    const widgets: RegistryWidgetsType = {
+      TextWidget: CustomFormTextWidget,
+    }
+
     mainExecutionDisplay = (
       <div className="flex flex-col gap-2">
         <Autocomplete
@@ -162,6 +198,8 @@ export const StepDisplay = ({
             <div>Arguments:</div>
             <div>
               <Form
+                widgets={widgets}
+                uiSchema={formUISchema}
                 className="mb-4"
                 schema={functionSpec.parameters as RJSFSchema}
                 validator={validator}
@@ -231,6 +269,17 @@ export const StepDisplay = ({
             >
               <TrashIcon></TrashIcon>
             </Button>
+            <Field>
+              <Label>Parallel?</Label>
+              <Switch
+                onChange={(e, value) => {
+                  fbSet("step", step.uid, {
+                    runInParallelWithNextStep: value,
+                  })
+                }}
+                checked={step.runInParallelWithNextStep || false}
+              ></Switch>
+            </Field>
           </div>
         </Field>
       </div>

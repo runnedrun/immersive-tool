@@ -1,35 +1,30 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { withData } from "@/data/withData";
-import { fbCreate } from "@/firebase/settersFe";
-import { useEffect, useRef, useState } from "react";
-import { flowRunDataFn } from "./flowRunDataFn";
-import { FlowMessage, SenderType } from "@/models/types/FlowMessage";
-import {
-  triggerProcessForJobNameAndId,
-  triggerProcessOnWrite,
-} from "@/data/helpers/triggerProcessOnWrite";
-import TextareaAutosize from "react-textarea-autosize";
-import { isVisibleMessage } from "./isVisibleMessage";
-import { MessageDisplay } from "./MessageDisplay";
-import { Flow } from "@/models/types/Flow";
-import { DebugMessageDisplay } from "./DebugMessageDisplay";
-import { DebugMessagesDisplay } from "./DebugMessagesDisplay";
-import { BeatLoader } from "react-spinners";
-import { FlowRun } from "@/models/types/FlowRun";
+import { Button } from "@/components/ui/button"
+import { triggerProcessForJobNameAndId } from "@/data/helpers/triggerProcessOnWrite"
+import { withData } from "@/data/withData"
+import { fbCreate } from "@/firebase/settersFe"
+import { Flow } from "@/models/types/Flow"
+import { FlowMessage, SenderType } from "@/models/types/FlowMessage"
+import { FlowRun } from "@/models/types/FlowRun"
+import { useEffect, useRef, useState } from "react"
+import { BeatLoader } from "react-spinners"
+import TextareaAutosize from "react-textarea-autosize"
+import { DebugMessagesDisplay } from "./DebugMessagesDisplay"
+import { MessageDisplay } from "./MessageDisplay"
+import { flowRunDataFn } from "./flowRunDataFn"
+import { isVisibleMessage } from "./isVisibleMessage"
 
 const NewFlowMessageTextBox = ({
   flowRunKey,
   flowKey,
   disabled,
 }: {
-  flowRunKey: string;
-  flowKey: string;
-  disabled?: boolean;
+  flowRunKey: string
+  flowKey: string
+  disabled?: boolean
 }) => {
-  const [messageText, setMessageText] = useState("");
+  const [messageText, setMessageText] = useState("")
   const sendMessage = async () => {
     fbCreate("flowMessage", {
       flowRunKey,
@@ -39,24 +34,24 @@ const NewFlowMessageTextBox = ({
       processedForStepRunKey: null,
       processedForStep: null,
       toolCallsJSON: null,
-    });
-    triggerProcessForJobNameAndId("flowRun", flowRunKey);
-    setMessageText("");
-  };
+    })
+    triggerProcessForJobNameAndId("flowRun", flowRunKey)
+    setMessageText("")
+  }
   return (
-    <div className="flex mr-2 items-end gap-2 flex-col w-full">
+    <div className="mr-2 flex w-full flex-col items-end gap-2">
       <TextareaAutosize
         disabled={disabled}
-        className="w-full p-2 border-2 border-gray-300 rounded-md"
+        className="w-full rounded-md border-2 border-gray-300 p-2"
         onChange={(e) => {
-          setMessageText(e.target.value);
+          setMessageText(e.target.value)
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
-            sendMessage();
-            e.preventDefault();
+            sendMessage()
+            e.preventDefault()
 
-            return false;
+            return false
           }
         }}
         value={messageText}
@@ -66,40 +61,39 @@ const NewFlowMessageTextBox = ({
         className={"grow-0"}
         type="submit"
         onClick={() => {
-          sendMessage();
+          sendMessage()
         }}
       >
         Send
       </Button>
     </div>
-  );
-};
+  )
+}
 
 const MessagesDisplay = ({
   messages,
   flow,
-  flowRun,
 }: {
-  messages: FlowMessage[];
-  flowRun: FlowRun;
-  flow: Flow;
+  messages: FlowMessage[]
+  flowRun: FlowRun
+  flow: Flow
 }) => {
   const messagesToDisplay = messages.filter((message) => {
-    return isVisibleMessage(message);
-  });
-  const messageListRef = useRef<HTMLDivElement>(null);
+    return isVisibleMessage(message)
+  })
+  const messageListRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (messageListRef.current) {
-      const firstChild = messageListRef.current.firstElementChild;
+      const firstChild = messageListRef.current.firstElementChild
       if (firstChild) {
-        firstChild.scrollIntoView({ behavior: "smooth", block: "end" });
+        firstChild.scrollIntoView({ behavior: "smooth", block: "end" })
       }
     }
-  }, [messagesToDisplay.length]);
+  }, [messagesToDisplay.length])
 
   return (
     <div
-      className="flex flex-col-reverse overflow-auto justify-start grow min-h-0"
+      className="flex min-h-0 grow flex-col-reverse justify-start overflow-auto"
       ref={messageListRef}
     >
       {messagesToDisplay.map((message) => {
@@ -109,28 +103,28 @@ const MessagesDisplay = ({
             flow={flow}
             key={message.uid}
           ></MessageDisplay>
-        );
+        )
       })}
     </div>
-  );
-};
+  )
+}
 
 export const FlowRunDisplay = withData(
   flowRunDataFn,
   ({ data: { messages, flowRun, flow, debugMode, runId } }) => {
-    const firstMessage = messages[0];
+    const firstMessage = messages[0]
     const isLoading =
-      firstMessage?.senderType !== SenderType.Bot && !flowRun.completedAt;
+      firstMessage?.senderType !== SenderType.Bot && !flowRun.completedAt
 
     return (
-      <div className="w-full flex justify-center h-screen pb-5 flow-run-display">
-        <div className="md:w-[32rem] w-full p-4 flex flex-col gap-4 h-full justify-end">
+      <div className="flow-run-display flex h-screen w-full justify-center pb-5">
+        <div className="flex h-full w-full flex-col justify-end gap-4 p-4 md:w-[32rem]">
           {flowRun.isDebug && (
-            <div className="text-lg text-red-400 text-center min-h-0">
+            <div className="min-h-0 text-center text-lg text-red-400">
               This is a DEBUG run
             </div>
           )}
-          <div className="min-h-0 grow flex flex-col gap-2">
+          <div className="flex min-h-0 grow flex-col gap-2">
             {debugMode ? (
               <DebugMessagesDisplay
                 flowRun={flowRun}
@@ -158,6 +152,6 @@ export const FlowRunDisplay = withData(
           </div>
         </div>
       </div>
-    );
+    )
   }
-);
+)
