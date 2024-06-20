@@ -1,19 +1,19 @@
-import { DataFnType } from "@/data/component";
-import { queryObs } from "@/firebase/getters";
-import { getObsForDoc } from "@/firebase/readerFe";
-import { Flow } from "@/models/types/Flow";
-import { FlowRun } from "@/models/types/FlowRun";
-import { where } from "@firebase/firestore";
-import { limit, orderBy, query } from "firebase/firestore";
-import { Observable } from "rxjs";
+import { DataFnType } from "@/data/component"
+import { queryObs } from "@/firebase/getters"
+import { getObsForDoc } from "@/firebase/readerFe"
+import { Flow } from "@/models/types/Flow"
+import { FlowRun } from "@/models/types/FlowRun"
+import { where } from "@firebase/firestore"
+import { limit, orderBy, query } from "@firebase/firestore"
+import { Observable } from "rxjs"
 
 export const historyDataFn: DataFnType<
   {
-    flowRunHistory: Observable<FlowRun[]>;
-    flow: Observable<Flow>;
+    flowRunHistory: Observable<FlowRun[] | null>
+    flow: Observable<Flow | null>
   },
   {
-    flowId: string;
+    flowId: string
   },
   {}
 > = ({ params: { flowId } }) => {
@@ -25,8 +25,8 @@ export const historyDataFn: DataFnType<
         where("archived", "==", false),
         orderBy("createdAt", "desc"),
         limit(100)
-      );
+      )
     }),
     flow: getObsForDoc("flow", flowId),
-  };
-};
+  }
+}

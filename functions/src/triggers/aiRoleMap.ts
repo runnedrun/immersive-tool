@@ -1,5 +1,5 @@
-import { SenderType } from "@/models/types/FlowMessage";
-import { ChatCompletionRole } from "openai/resources/index.mjs";
+import { SenderType } from "@/models/types/FlowMessage"
+import { ChatCompletionRole } from "openai/resources/index.mjs"
 
 export const aiRoleMap: Record<SenderType, ChatCompletionRole> = {
   [SenderType.Bot]: "assistant",
@@ -10,4 +10,6 @@ export const aiRoleMap: Record<SenderType, ChatCompletionRole> = {
   [SenderType.System]: "system",
   [SenderType.ExecutionResponse]: "assistant",
   [SenderType.StepIntroducion]: "system",
-};
+  [SenderType.DirectFunctionCall]: "assistant",
+  [SenderType.DirectFunctionResponse]: "assistant",
+}

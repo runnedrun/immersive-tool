@@ -2,7 +2,7 @@
 import { fbSet } from "@/firebase/settersFe"
 import { Step, VariableData } from "@/models/types/Step"
 import { PromptDisplayWithVariables } from "./PromptDisplayWithVariables"
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from "@firebase/firestore"
 
 export const ResponseDescriptionTemplateDisplay = ({
   step,

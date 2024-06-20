@@ -1,30 +1,30 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@heroicons/react/16/solid";
-import { Flow, GlobalVariableType } from "@/models/types/Flow";
-import { Autocomplete, IconButton, TextField } from "@mui/material";
-import { fbSet } from "@/firebase/settersFe";
-import { UploadFileComponent } from "./UploadFileComponent";
-import { useCallback } from "react";
-import { Timestamp } from "firebase/firestore";
-import { isNil } from "lodash";
-import { VariableDisplay } from "./VariableDisplay";
-import CopyToClipboard from "react-copy-to-clipboard";
-import { CopyAll } from "@mui/icons-material";
+"use client"
+import { Button } from "@/components/ui/button"
+import { PlusIcon } from "@heroicons/react/16/solid"
+import { Flow, GlobalVariableType } from "@/models/types/Flow"
+import { Autocomplete, IconButton, TextField } from "@mui/material"
+import { fbSet } from "@/firebase/settersFe"
+import { UploadFileComponent } from "./UploadFileComponent"
+import { useCallback } from "react"
+import { Timestamp } from "@firebase/firestore"
+import { isNil } from "lodash"
+import { VariableDisplay } from "./VariableDisplay"
+import CopyToClipboard from "react-copy-to-clipboard"
+import { CopyAll } from "@mui/icons-material"
 
 const DropdownLabels: { label: string; id: GlobalVariableType }[] = [
   { label: "File", id: GlobalVariableType.File },
   { label: "Query", id: GlobalVariableType.QueryParam },
-];
+]
 
 export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
   const onNameChange = useCallback(
     (variableName: string, oldVariableName: string, value: any) => {
       const newGlobalVariables = {
         ...flow.globalVariables,
-      };
-      delete newGlobalVariables[oldVariableName];
-      newGlobalVariables[variableName] = value;
+      }
+      delete newGlobalVariables[oldVariableName]
+      newGlobalVariables[variableName] = value
 
       fbSet(
         "flow",
@@ -34,17 +34,17 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
           globalVariables: newGlobalVariables,
         },
         { merge: false }
-      );
+      )
     },
     [flow]
-  );
+  )
 
   return (
     <div>
       <VariableDisplay
         variableNamesAndValues={flow.globalVariables || {}}
         renderVariableValue={(variableName, value) => {
-          console.log("Redneing with name", variableName);
+          console.log("Redneing with name", variableName)
           const variableTypeDropdown = (
             <Autocomplete
               className="w-32"
@@ -65,14 +65,14 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
                       type: newValue?.id ?? null,
                     },
                   },
-                });
+                })
               }}
             />
-          );
+          )
 
           const variableInputs: Record<GlobalVariableType, JSX.Element> = {
             [GlobalVariableType.File]: (
-              <div className="flex gap-2 w-full">
+              <div className="flex w-full gap-2">
                 <UploadFileComponent
                   file={value.file || null}
                   fileComponentId={value.createdAt?.toMillis().toString() || ""}
@@ -85,7 +85,7 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
                           file,
                         },
                       },
-                    });
+                    })
                   }}
                 ></UploadFileComponent>
                 {value?.file?.url && (
@@ -111,30 +111,30 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
                         defaultValue: e.target.value,
                       },
                     },
-                  });
+                  })
                 }}
               ></TextField>
             ),
-          };
+          }
           const input = !isNil(value.type) ? (
             variableInputs[value.type]
           ) : (
-            <div className="text-gray-400 w-full">Select a type</div>
-          );
+            <div className="w-full text-gray-400">Select a type</div>
+          )
 
           return (
-            <div className="w-full flex items-center gap-2">
+            <div className="flex w-full items-center gap-2">
               <div className="grow">{input}</div>
               <div>{variableTypeDropdown}</div>
             </div>
-          );
+          )
         }}
         onNameChange={onNameChange}
         onDelete={(variableName) => {
           const newGlobalVariables = {
             ...flow.globalVariables,
-          };
-          delete newGlobalVariables[variableName];
+          }
+          delete newGlobalVariables[variableName]
           fbSet(
             "flow",
             flow.uid,
@@ -143,10 +143,10 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
               globalVariables: newGlobalVariables,
             },
             { merge: false }
-          );
+          )
         }}
       ></VariableDisplay>
-      <div className="flex gap-2 mt-2">
+      <div className="mt-2 flex gap-2">
         <Button
           onClick={() => {
             fbSet("flow", flow.uid, {
@@ -156,12 +156,12 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
                   createdAt: Timestamp.now(),
                 },
               },
-            });
+            })
           }}
         >
           <PlusIcon></PlusIcon> Add Global Variable
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}

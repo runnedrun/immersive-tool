@@ -1,9 +1,12 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { triggerProcessForJobNameAndId } from "@/data/helpers/triggerProcessOnWrite"
+import {
+  triggerProcessForJobNameAndId,
+  triggerProcessOnWrite,
+} from "@/data/helpers/triggerProcessOnWrite"
 import { withData } from "@/data/withData"
-import { fbCreate } from "@/firebase/settersFe"
+import { fbCreate, fbSet } from "@/firebase/settersFe"
 import { Flow } from "@/models/types/Flow"
 import { FlowMessage, SenderType } from "@/models/types/FlowMessage"
 import { FlowRun } from "@/models/types/FlowRun"
@@ -14,20 +17,21 @@ import { DebugMessagesDisplay } from "./DebugMessagesDisplay"
 import { MessageDisplay } from "./MessageDisplay"
 import { flowRunDataFn } from "./flowRunDataFn"
 import { isVisibleMessage } from "./isVisibleMessage"
+import { resetLatestStepInFlowRun } from "./resetFlowRunToStepRunStart"
 
 const NewFlowMessageTextBox = ({
-  flowRunKey,
   flowKey,
   disabled,
+  flowRun,
 }: {
-  flowRunKey: string
   flowKey: string
   disabled?: boolean
+  flowRun: FlowRun
 }) => {
   const [messageText, setMessageText] = useState("")
   const sendMessage = async () => {
     fbCreate("flowMessage", {
-      flowRunKey,
+      flowRunKey: flowRun.uid,
       text: messageText,
       senderType: SenderType.User,
       flowKey,
@@ -35,7 +39,7 @@ const NewFlowMessageTextBox = ({
       processedForStep: null,
       toolCallsJSON: null,
     })
-    triggerProcessForJobNameAndId("flowRun", flowRunKey)
+    triggerProcessForJobNameAndId("flowRun", flowRun.uid)
     setMessageText("")
   }
   return (
@@ -57,15 +61,31 @@ const NewFlowMessageTextBox = ({
         value={messageText}
         minRows={2}
       ></TextareaAutosize>
-      <Button
-        className={"grow-0"}
-        type="submit"
-        onClick={() => {
-          sendMessage()
-        }}
-      >
-        Send
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          className={"grow-0"}
+          type="submit"
+          onClick={() => {
+            sendMessage()
+          }}
+        >
+          Send
+        </Button>
+        {flowRun.errorMessage ? (
+          <div
+            className="cursor-pointer text-red-400"
+            onClick={async () => {
+              await fbSet("flowRun", flowRun.uid, {
+                errorMessage: null,
+              })
+              await resetLatestStepInFlowRun(flowKey, flowRun.uid)
+              triggerProcessForJobNameAndId("flowRun", flowRun.uid)
+            }}
+          >
+            Error: Click to retry
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -146,7 +166,7 @@ export const FlowRunDisplay = withData(
 
             <NewFlowMessageTextBox
               disabled={!flowRun.allowInput || isLoading}
-              flowRunKey={runId}
+              flowRun={flowRun}
               flowKey={flowRun.flowKey}
             ></NewFlowMessageTextBox>
           </div>

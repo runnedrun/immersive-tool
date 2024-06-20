@@ -1,5 +1,5 @@
-import { docObs, queryObs } from "@/firebase/getters";
-import { query, where, orderBy } from "firebase/firestore";
+import { docObs, queryObs } from "@/firebase/getters"
+import { query, where, orderBy } from "@firebase/firestore"
 
 // add reqId here with memoize to make sure we can navigate back and forth preoprely
 
@@ -12,7 +12,7 @@ export const flowDataFn = ({ params }: { params: { flowId: string } }) => {
         where("flowKey", "==", params.flowId),
         where("archived", "==", false),
         orderBy("index", "asc")
-      );
+      )
     }),
-  };
-};
+  }
+}

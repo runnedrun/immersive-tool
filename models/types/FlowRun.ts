@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from "@firebase/firestore"
 import { ModelBase } from "../AllModels"
 import { v4 as uuidv4 } from "uuid"
 
@@ -11,12 +11,13 @@ export const getFlowIdFromFlowRunId = (flowRunId: string) => {
 }
 
 export type FlowRun = {
-  triggeredAt?: Timestamp
-  triggerCancelled?: Timestamp
+  triggeredAt?: number
+  cancelledAt?: number
   flowKey: string
   completedAt: null | Timestamp
   allowInput: boolean
   queryParams: Record<string, string>
   introMessageSent?: boolean
   isDebug: boolean
+  errorMessage?: string | null
 } & ModelBase

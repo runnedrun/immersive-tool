@@ -1,62 +1,62 @@
-"use client";
-import { DataFnType } from "@/data/component";
+"use client"
+import { DataFnType } from "@/data/component"
 import {
   triggerProcessForJobNameAndId,
   triggerProcessOnWrite,
-} from "@/data/helpers/triggerProcessOnWrite";
-import { withData } from "@/data/withData";
-import { getObsForDoc } from "@/firebase/readerFe";
-import { fbSet } from "@/firebase/settersFe";
+} from "@/data/helpers/triggerProcessOnWrite"
+import { withData } from "@/data/withData"
+import { getObsForDoc } from "@/firebase/readerFe"
+import { fbSet } from "@/firebase/settersFe"
 import {
   PossibleFnNames,
   availableToolSpecsByName,
-} from "@/functions/src/triggers/processFlowRun/tools/availableTools";
-import { testFunction } from "@/functions/src/triggers/testFunction/testFunction";
-import { objKeys } from "@/lib/helpers/objKeys";
+} from "@/functions/src/triggers/processFlowRun/tools/availableTools"
+import { testFunction } from "@/functions/src/triggers/testFunction/testFunction"
+import { objKeys } from "@/lib/helpers/objKeys"
 import {
   TestFunctionJob,
   getTestFunctionJobId,
-} from "@/models/types/TestFunctionJob";
-import { Autocomplete, CircularProgress, TextField } from "@mui/material";
-import Form from "@rjsf/mui";
-import { RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
-import { Timestamp } from "firebase/firestore";
-import { useState } from "react";
-import { Observable } from "rxjs";
+} from "@/models/types/TestFunctionJob"
+import { Autocomplete, CircularProgress, TextField } from "@mui/material"
+import Form from "@rjsf/mui"
+import { RJSFSchema } from "@rjsf/utils"
+import validator from "@rjsf/validator-ajv8"
+import { Timestamp } from "@firebase/firestore"
+import { useState } from "react"
+import { Observable } from "rxjs"
 
 const dataFn: DataFnType<
   {
-    testFunctionJob: Observable<TestFunctionJob>;
+    testFunctionJob: Observable<TestFunctionJob | null>
   },
   {},
   {
-    flowId: string;
-    functionName: string;
+    flowId: string
+    functionName: string
   }
 > = ({ props: { flowId, functionName } }) => {
   const testFunctionJob = getObsForDoc(
     "testFunctionJob",
     getTestFunctionJobId(flowId, functionName)
-  );
+  )
   return {
     testFunctionJob,
-  };
-};
+  }
+}
 
 export const TestFunctionView = withData(
   dataFn,
   ({ functionName, flowId, data: { testFunctionJob } }) => {
     const functionSpec =
-      availableToolSpecsByName[functionName as PossibleFnNames];
+      availableToolSpecsByName[functionName as PossibleFnNames]
 
-    const formData = testFunctionJob?.args || {};
+    const formData = testFunctionJob?.args || {}
 
     if (!functionSpec || !testFunctionJob) {
-      return <CircularProgress></CircularProgress>;
+      return <CircularProgress></CircularProgress>
     }
-    const startedAt = testFunctionJob?.startedAt || 0;
-    const endedAt = testFunctionJob?.completedAt || 0;
+    const startedAt = testFunctionJob?.startedAt || 0
+    const endedAt = testFunctionJob?.completedAt || 0
 
     const loadingDisplay =
       startedAt > endedAt ? (
@@ -70,7 +70,7 @@ export const TestFunctionView = withData(
         </div>
       ) : (
         <div></div>
-      );
+      )
 
     return (
       <div className="pb-10">
@@ -82,7 +82,7 @@ export const TestFunctionView = withData(
           validator={validator}
           formData={formData}
           onChange={(a) => {
-            fbSet("testFunctionJob", testFunctionJob.uid, { args: a.formData });
+            fbSet("testFunctionJob", testFunctionJob.uid, { args: a.formData })
           }}
           onSubmit={(a) => {
             triggerProcessOnWrite(
@@ -92,31 +92,31 @@ export const TestFunctionView = withData(
                 result: null,
                 startedAt: Timestamp.now(),
               })
-            );
+            )
           }}
         />
         {loadingDisplay}
       </div>
-    );
+    )
   }
-);
+)
 
 export const TestFunctionPanel = ({ flowId }: { flowId: string }) => {
   const [selectedFunctionName, setSelectedFunctionName] = useState<
     string | null
-  >("");
-  const functionNames = objKeys(availableToolSpecsByName);
+  >("")
+  const functionNames = objKeys(availableToolSpecsByName)
   return (
-    <div className="w-full overflow-auto h-full">
-      <div className="h-full p-5 flex flex-col gap-4">
-        <div className="font-bold text-lg">Test Functions</div>
+    <div className="h-full w-full overflow-auto">
+      <div className="flex h-full flex-col gap-4 p-5">
+        <div className="text-lg font-bold">Test Functions</div>
         <Autocomplete
           disablePortal
           className="w-full"
           options={functionNames}
           renderInput={(params) => <TextField {...params} label="Function" />}
           onChange={(e, value) => {
-            setSelectedFunctionName(value);
+            setSelectedFunctionName(value)
           }}
         ></Autocomplete>
         <div>
@@ -129,5 +129,5 @@ export const TestFunctionPanel = ({ flowId }: { flowId: string }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

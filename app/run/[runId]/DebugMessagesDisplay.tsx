@@ -1,7 +1,7 @@
 "use client"
 import { withData } from "@/data/withData"
 import { FlowMessage } from "@/models/types/FlowMessage"
-import { groupBy, isNull, sortBy } from "lodash"
+import { flow, groupBy, isNull, sortBy } from "lodash"
 import { DebugMessageDisplay } from "./DebugMessageDisplay"
 import { DataFnType } from "@/data/component"
 import { Observable, of } from "rxjs"
@@ -21,7 +21,7 @@ import { ClipLoader } from "react-spinners"
 import { PopupMenu } from "@/components/mine/PopupMenu"
 import { fbCreate, fbSet } from "@/firebase/settersFe"
 import { FlowRun } from "@/models/types/FlowRun"
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from "@firebase/firestore"
 import {
   triggerProcessForJobNameAndId,
   triggerProcessOnWrite,
@@ -29,6 +29,7 @@ import {
 import { useRouter } from "next/navigation"
 import { Pause, PauseCircle, PlayCircle } from "@mui/icons-material"
 import { IconButton } from "@mui/material"
+import { resetFlowRunToStepRunStart } from "./resetFlowRunToStepRunStart"
 
 const groupDisplayDataFn: DataFnType<
   { step: Observable<Step | null>; stepRun: Observable<StepRun | null> },
@@ -210,13 +211,11 @@ export const DebugMessagesDisplay = ({
         : -1 * value[0].createdAt.toMillis()
   )
 
-  const isPaused =
-    (flowRun.cancelledAt?.toMillis() || 0) >
-    (flowRun.triggeredAt?.toMillis() || 0)
+  const isPaused = (flowRun?.cancelledAt || 0) > (flowRun?.triggeredAt || 0)
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <div>Debug View</div>
         <div>
           {isPaused ? (
@@ -231,7 +230,7 @@ export const DebugMessagesDisplay = ({
             <IconButton
               onClick={() => {
                 fbSet("flowRun", flowRun.uid, {
-                  cancelledAt: (flowRun.triggeredAt?.toMillis() || 0) + 1,
+                  cancelledAt: (flowRun.triggeredAt || 0) + 1,
                 })
               }}
             >
@@ -296,13 +295,18 @@ export const DebugMessagesDisplay = ({
                 (_) => -1 * _.createdAt.toMillis()
               )}
               resetToHere={async () => {
-                const newCancelledAtMs =
-                  (flowRun.triggeredAt?.toMillis() || 0) + 1
-                await triggerProcessOnWrite(
-                  fbSet("flowRun", flowRun.uid, {
-                    cancelledAt: Timestamp.fromMillis(newCancelledAtMs),
-                  })
+                const newCancelledAtMs = (flowRun.triggeredAt || 0) + 1
+
+                await fbSet("flowRun", flowRun.uid, {
+                  cancelledAt: newCancelledAtMs,
+                })
+
+                await resetFlowRunToStepRunStart(
+                  flowRun.flowKey,
+                  flowRun.uid,
+                  stepId
                 )
+                triggerProcessForJobNameAndId("flowRun", flowRun.uid)
               }}
               duplicateFromHere={duplicateFromHere}
               stepId={stepId}

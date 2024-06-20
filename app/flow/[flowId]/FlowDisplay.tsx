@@ -187,14 +187,14 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
             <ChevronLeftIcon />
           </IconButton>
         </DrawerHeader>
-        <TestFunctionPanel flowId={flow.uid}></TestFunctionPanel>
+        <TestFunctionPanel flowId={flow!.uid}></TestFunctionPanel>
       </Drawer>
       <Main open={isOpen}>
         <div className="relative mt-20 flex w-full justify-center">
           <div className="flex flex-col gap-6">
             <div className="flex w-[40rem] flex-col gap-3 rounded-md bg-zinc-100 p-3 shadow-lg">
               <div>Global Variables:</div>
-              <GlobalVariableDisplay flow={flow}></GlobalVariableDisplay>
+              <GlobalVariableDisplay flow={flow!}></GlobalVariableDisplay>
             </div>
             <div className="flex w-[40rem] flex-col gap-3 rounded-md bg-zinc-100 p-3 shadow-lg">
               <div className="w-full text-lg">
@@ -202,7 +202,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                   <div>Flow:</div>
                   <div className="flex flex-wrap items-center gap-2">
                     <div>
-                      <Button target="_blank" href={`/history/${flow.uid}`}>
+                      <Button target="_blank" href={`/history/${flow!.uid}`}>
                         History
                       </Button>
                     </div>
@@ -212,7 +212,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                           text={
                             isServerside()
                               ? "loading..."
-                              : new URL(`/start/${flow.uid}`, document.baseURI)
+                              : new URL(`/start/${flow!.uid}`, document.baseURI)
                                   .href
                           }
                           onCopy={() => toast("Copied")}
@@ -224,7 +224,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <div>
                       <Button
                         target="_blank"
-                        href={`/start/${flow.uid}?debug=true`}
+                        href={`/start/${flow!.uid}?debug=true`}
                       >
                         Open with Debug Mode
                       </Button>
@@ -235,7 +235,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                           {
                             action: async () => {
                               const newFlowRef = await duplicateFlow(
-                                flow,
+                                flow!,
                                 steps
                               )
                               router.push(`/flow/${newFlowRef.id}`)
@@ -252,16 +252,16 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <Label>Title</Label>
                     <Input
                       className={"border-none"}
-                      value={flow.title || ""}
+                      value={flow!.title || ""}
                       onChange={(e) => {
-                        fbSet("flow", flow.uid, { title: e.target.value })
+                        fbSet("flow", flow!.uid, { title: e.target.value })
                       }}
                     ></Input>
                   </Field>
                   <Field>
                     <Label>Flow Run Identifier (Optional)</Label>
                     <FlowIdentifierDisplay
-                      flow={flow}
+                      flow={flow!}
                       steps={steps}
                     ></FlowIdentifierDisplay>
                   </Field>
@@ -273,10 +273,10 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     </Label>
                     <Input
                       className={"border-none"}
-                      value={flow.aiName || ""}
+                      value={flow!.aiName || ""}
                       placeholder="AI Helper"
                       onChange={(e) => {
-                        fbSet("flow", flow.uid, { aiName: e.target.value })
+                        fbSet("flow", flow!.uid, { aiName: e.target.value })
                       }}
                     ></Input>
                   </Field>
@@ -286,9 +286,9 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <Label>Description</Label>
                     <Input
                       className={"border-none"}
-                      value={flow.description || ""}
+                      value={flow!.description || ""}
                       onChange={(e) => {
-                        fbSet("flow", flow.uid, {
+                        fbSet("flow", flow!.uid, {
                           description: e.target.value,
                         })
                       }}
@@ -300,9 +300,9 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <Label>Introduction Message</Label>
                     <Input
                       className={"border-none"}
-                      value={flow.introductionMessage || ""}
+                      value={flow!.introductionMessage || ""}
                       onChange={(e) => {
-                        fbSet("flow", flow.uid, {
+                        fbSet("flow", flow!.uid, {
                           introductionMessage: e.target.value,
                         })
                       }}
@@ -315,13 +315,13 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
               <NewStepButton
                 indexOfPrevStep={-1}
                 steps={steps}
-                flow={flow}
+                flow={flow!}
               ></NewStepButton>
               <div className="flex flex-col gap-5">
                 {steps.map((step, i) => {
                   const previousSteps = steps.slice(0, i)
                   const variablesFromPreviousSteps =
-                    getAllDefinedVariablesForSteps(previousSteps, flow)
+                    getAllDefinedVariablesForSteps(previousSteps, flow!)
                   return (
                     <div key={step.uid}>
                       <StepDisplay
@@ -338,7 +338,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                       <NewStepButton
                         indexOfPrevStep={i}
                         steps={steps}
-                        flow={flow}
+                        flow={flow!}
                       ></NewStepButton>
                     </div>
                   )

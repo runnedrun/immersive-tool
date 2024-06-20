@@ -1,7 +1,7 @@
 "use client"
 import { fbSet } from "@/firebase/settersFe"
 import { Step, VariableData } from "@/models/types/Step"
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from "@firebase/firestore"
 import { isEqual, uniq } from "lodash"
 import { PromptDisplayWithVariables } from "./PromptDisplayWithVariables"
 

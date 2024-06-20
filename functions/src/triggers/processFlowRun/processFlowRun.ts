@@ -14,6 +14,7 @@ import { getMessagesForAi } from "./getMessagesForAi"
 import { createSystemMessageForStepStart } from "./getSystemMessageForStep"
 import { getVariableNamesSorted } from "./getVariableNamesSorted"
 import { processStepRun } from "./processStepRun"
+import { getCurrentStepRuns } from "./getCurrentStepRuns"
 
 let reRunsAllowed = 30
 
@@ -22,7 +23,7 @@ export const checkForFlowRunCancelled = async (
   originalTriggerTime: number
 ) => {
   const flowRun = await readDoc("flowRun", flowRunKey)
-  if ((flowRun.cancelledAt?.toMillis() || 0) > originalTriggerTime) {
+  if ((flowRun.cancelledAt || 0) > originalTriggerTime) {
     return true
   }
   return false
@@ -56,35 +57,20 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
     readDoc("flow", flowRun.flowKey),
   ])
 
-  const stepsCompletedBooleans = steps.map((step) => {
-    return !!stepRuns.find(
-      (_) => _.stepKey === step.uid && _.state.stepCompletedAt
-    )
-  })
+  const {
+    currentSteps: curSteps,
+    currentStepIndex,
+    currentStepRuns,
+    curStepIds,
+  } = getCurrentStepRuns(steps, stepRuns)
 
-  const currentStepIndex = stepsCompletedBooleans.indexOf(false)
-  const curSteps = [] as Step[]
-
-  for (let i = 0; i < steps.length; i++) {
-    const thisStep = steps[i]
-    if (i >= currentStepIndex) {
-      curSteps.push(thisStep)
-    }
-    if (!thisStep.runInParallelWithNextStep) {
-      break
-    }
-  }
   const completedSteps = steps.slice(0, currentStepIndex)
-  const curStepIds = curSteps.map((_) => _.uid)
 
   console.log(
     "running flow run processing",
     flowRunKey,
     flowRun.flowKey,
-    curStepIds,
-    flowRun,
-    stepRuns,
-    steps
+    curStepIds
   )
 
   if (!curSteps.length) {
@@ -93,8 +79,6 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
     })
     return false
   }
-
-  let currentStepRuns = stepRuns.filter((_) => curStepIds.includes(_.stepKey))
   const currentStepIds = currentStepRuns.map((_) => _.uid)
 
   const stepRunsWithoutCurrentStep = stepRuns.filter((_) =>
@@ -173,13 +157,14 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
       { id }
     )
 
-    currentStepRuns = [ref.data]
+    currentStepRuns.push(ref.data)
   }
 
   // todo Add UI lock here
   await fbSet("flowRun", flowRunKey, {
     allowInput: false,
   })
+
   await Promise.all(
     curSteps.map(async (step) => {
       const currStepRun = currentStepRuns.find((_) => _.stepKey === step.uid)
@@ -249,4 +234,19 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
   })
 
   return false
+}
+
+export const processFlowRunWithErrorHandling = async (
+  flowRunKey: string,
+  trigger: number
+) => {
+  try {
+    const res = await processFlowRun(flowRunKey, trigger)
+    return res
+  } catch (e: any) {
+    await fbSet("flowRun", flowRunKey, {
+      errorMessage: e.message || e,
+    })
+    throw e
+  }
 }

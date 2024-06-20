@@ -1,8 +1,5 @@
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from "@firebase/firestore"
 
 export const toTimestamp = (feTimestamp: Timestamp) => {
-  return new Timestamp(
-    feTimestamp?.seconds || 0,
-    feTimestamp?.nanoseconds || 0
-  );
-};
+  return new Timestamp(feTimestamp?.seconds || 0, feTimestamp?.nanoseconds || 0)
+}

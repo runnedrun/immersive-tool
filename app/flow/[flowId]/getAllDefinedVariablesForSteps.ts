@@ -1,6 +1,6 @@
 import { Flow } from "@/models/types/Flow"
 import { Step, VariableData } from "@/models/types/Step"
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from "@firebase/firestore"
 
 export const getAllDefinedVariablesForSteps = (steps: Step[], flow: Flow) => {
   return steps.reduce(

@@ -1,24 +1,24 @@
-import { connectAuthEmulator, getAuth } from "@firebase/auth";
-import { connectStorageEmulator, getStorage } from "@firebase/storage";
-import { getApp as fbGetApp, initializeApp } from "firebase/app";
+import { connectAuthEmulator, getAuth } from "@firebase/auth"
+import { connectStorageEmulator, getStorage } from "@firebase/storage"
+import { getApp as fbGetApp, initializeApp } from "@firebase/app"
 import {
   connectFirestoreEmulator,
   getFirestore,
   initializeFirestore,
-} from "firebase/firestore";
+} from "@firebase/firestore"
 
 const getApp = (name?: string) => {
-  let app = null;
+  let app = null
   try {
-    app = fbGetApp(name);
+    app = fbGetApp(name)
   } catch (e) {}
-  return app;
-};
+  return app
+}
 
 export const initFb = () => {
-  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE;
+  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE
 
-  if (getApp()) return { db: getFirestore() };
+  if (getApp()) return { db: getFirestore() }
 
   const config = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_CONFIG_API_KEY,
@@ -31,19 +31,19 @@ export const initFb = () => {
     appId: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_CONFIG_APP_ID,
     measurementId:
       process.env.NEXT_PUBLIC_FIREBASE_CLIENT_CONFIG_MEASUREMENT_ID,
-  };
+  }
 
-  const app = initializeApp(config);
+  const app = initializeApp(config)
 
   const db = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
-  });
+  })
 
-  const storage = getStorage();
+  const storage = getStorage()
 
-  demoMode && connectFirestoreEmulator(db, "localhost", 8071);
-  demoMode && connectStorageEmulator(storage, "localhost", 9189);
-  demoMode && connectAuthEmulator(getAuth(), "http://localhost:9089");
+  demoMode && connectFirestoreEmulator(db, "localhost", 8071)
+  demoMode && connectStorageEmulator(storage, "localhost", 9189)
+  demoMode && connectAuthEmulator(getAuth(), "http://localhost:9089")
 
-  return { db };
-};
+  return { db }
+}

@@ -7,7 +7,7 @@ import {
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs"
 import { runTools } from "./runTools"
 import { getSaveVariableFnSpec } from "./tools/buildSaveVariableFn"
-import { fbSet } from "../../helpers/fbWriters"
+import { fbCreate, fbSet } from "../../helpers/fbWriters"
 import { isEmpty } from "lodash"
 import { Timestamp } from "firebase-admin/firestore"
 import { runPromptStep, sendPreExecutionMessage } from "./runPromptStep"
@@ -20,6 +20,7 @@ import { ChatCompletionRunner } from "openai/lib/ChatCompletionRunner.mjs"
 import { deepMapObj } from "@/lib/helpers/deepMapObj"
 import { replaceTemplate } from "./replaceTemplate"
 import { checkForFlowRunCancelled } from "./processFlowRun"
+import { SenderType } from "@/models/types/FlowMessage"
 
 export type StepProcessingToolBuilder<ToolParams extends object> = (
   params: ProcessStepParams
@@ -54,8 +55,8 @@ const collectDataStep = async (params: ProcessStepParams) => {
 
 const directlyRunFunction = async (params: ProcessStepParams) => {
   if (
-    !params.currentStep.functionInformation?.name &&
-    params.currentStep.isDirectFunctionCall
+    !params.currentStep.isDirectFunctionCall ||
+    !params.currentStep.functionInformation?.name
   ) {
     await fbSet("stepRun", params.currentStepRun.uid, {
       state: {
@@ -67,8 +68,13 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
 
   await sendPreExecutionMessage(params)
 
+  console.log(
+    "params.currentStep.functionInformation?.name!",
+    JSON.stringify(params.currentStep.functionInformation, null, 2)
+  )
   const functionBuilder =
     availableToolGetters[params.currentStep.functionInformation?.name!]
+
   const functionToRun = functionBuilder(params)
   const fakeRunner = {
     abort: () => {},
@@ -87,6 +93,17 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
     }
   })
 
+  await fbCreate("flowMessage", {
+    flowRunKey: params.currentStepRun.flowRunKey,
+    text: `I am running this function: 
+    function title: ${params.currentStep.functionInformation?.name}
+    args: ${JSON.stringify(argsWithReplacement, null, 2)}`,
+    senderType: SenderType.DirectFunctionCall,
+    flowKey: params.currentStepRun.flowKey,
+    processedForStepRunKey: params.currentStepRun.uid,
+    processedForStep: params.currentStep.uid,
+  })
+
   const resp = await functionToRun.function(argsWithReplacement, fakeRunner)
 
   if (
@@ -97,6 +114,17 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
   ) {
     return false
   }
+
+  await fbCreate("flowMessage", {
+    flowRunKey: params.currentStepRun.flowRunKey,
+    text: `I got this function response: 
+    function title: ${params.currentStep.functionInformation?.name}
+    response: ${JSON.stringify(resp, null, 2)}`,
+    senderType: SenderType.DirectFunctionResponse,
+    flowKey: params.currentStepRun.flowKey,
+    processedForStepRunKey: params.currentStepRun.uid,
+    processedForStep: params.currentStep.uid,
+  })
 
   if (params.currentStep.functionInformation?.responseVariableName) {
     await fbSet("stepRun", params.currentStepRun.uid, {
