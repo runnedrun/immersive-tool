@@ -11,13 +11,15 @@ export const getCurrentStepRuns = (steps: Step[], stepRuns: StepRun[]) => {
   const currentStepIndex = stepsCompletedBooleans.indexOf(false)
   const curSteps = [] as Step[]
 
-  for (let i = 0; i < steps.length; i++) {
-    const thisStep = steps[i]
-    if (i >= currentStepIndex) {
-      curSteps.push(thisStep)
-    }
-    if (!thisStep.runInParallelWithNextStep) {
-      break
+  if (currentStepIndex !== -1) {
+    for (let i = 0; i < steps.length; i++) {
+      const thisStep = steps[i]
+      if (i >= currentStepIndex) {
+        curSteps.push(thisStep)
+        if (!thisStep.runInParallelWithNextStep) {
+          break
+        }
+      }
     }
   }
 

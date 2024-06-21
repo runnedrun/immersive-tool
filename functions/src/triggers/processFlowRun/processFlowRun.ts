@@ -1,7 +1,11 @@
-import { GlobalVariableData, GlobalVariableType } from "@/models/types/Flow"
+import {
+  Flow,
+  GlobalVariableData,
+  GlobalVariableType,
+} from "@/models/types/Flow"
 import { FlowRun } from "@/models/types/FlowRun"
 import { Step } from "@/models/types/Step"
-import { getStepRunId } from "@/models/types/StepRun"
+import { StepRun, getStepRunId } from "@/models/types/StepRun"
 import { Timestamp } from "firebase-admin/firestore"
 import { isNil } from "lodash"
 import { queryDocs, readDoc } from "../../helpers/fbReaders"
@@ -38,51 +42,17 @@ const globalVariableValueGetters: Record<
     flowRun.queryParams?.[name] || value.defaultValue || "",
 }
 
-export const processFlowRun = async (flowRunKey: string, trigger: number) => {
-  await fbSet("flowRun", flowRunKey, {
-    triggeredAt: trigger,
-  })
-  const flowRun = await readDoc("flowRun", flowRunKey)
-
-  const [steps, stepRuns, flow] = await Promise.all([
-    queryDocs("step", (q) => {
-      return q
-        .where("flowKey", "==", flowRun.flowKey)
-        .where("archived", "==", false)
-        .orderBy("index", "asc")
-    }),
-    await queryDocs("stepRun", (q) => {
-      return q.where("flowRunKey", "==", flowRunKey)
-    }),
-    readDoc("flow", flowRun.flowKey),
-  ])
-
-  const {
-    currentSteps: curSteps,
-    currentStepIndex,
-    currentStepRuns,
-    curStepIds,
-  } = getCurrentStepRuns(steps, stepRuns)
-
-  const completedSteps = steps.slice(0, currentStepIndex)
-
-  console.log(
-    "running flow run processing",
-    flowRunKey,
-    flowRun.flowKey,
-    curStepIds
-  )
-
-  if (!curSteps.length) {
-    fbSet("flowRun", flowRunKey, {
-      completedAt: Timestamp.now(),
-    })
-    return false
-  }
+const getAllVariablesWithGlobals = async (
+  currentStepRuns: StepRun[],
+  stepRuns: StepRun[],
+  completedSteps: Step[],
+  flow: Flow,
+  flowRun: FlowRun
+) => {
   const currentStepIds = currentStepRuns.map((_) => _.uid)
 
-  const stepRunsWithoutCurrentStep = stepRuns.filter((_) =>
-    currentStepIds.includes(_.uid)
+  const stepRunsWithoutCurrentStep = stepRuns.filter(
+    (_) => !currentStepIds.includes(_.uid)
   )
 
   const allVariablesFromPreviousSteps = completedSteps.reduce(
@@ -121,43 +91,114 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
     {} as Record<string, string>
   )
 
-  const allVariablesWithGlobals = {
+  return {
     ...allVariablesFromPreviousSteps,
     ...allGlobalVariableValueStrings,
   }
+}
 
-  const firstStepToRun = curSteps[0]
-
-  if (!currentStepRuns.length) {
-    await createSystemMessageForStepStart({
-      allSteps: steps,
+const createStepStartSystemMessageAndStepRun = async (
+  stepToRun: Step,
+  currentStepRuns: StepRun[],
+  stepRuns: StepRun[],
+  completedSteps: Step[],
+  allSteps: Step[],
+  flow: Flow,
+  flowRun: FlowRun
+) => {
+  const allVariablesWithGlobalsBeforeProcessing =
+    await getAllVariablesWithGlobals(
+      currentStepRuns,
+      stepRuns,
       completedSteps,
-      flowRun,
-      step: firstStepToRun,
-      variableValuessFromPreviousSteps: allVariablesWithGlobals,
+      flow,
+      flowRun
+    )
+  await createSystemMessageForStepStart({
+    allSteps,
+    completedSteps,
+    flowRun,
+    step: stepToRun,
+    variableValuessFromPreviousSteps: allVariablesWithGlobalsBeforeProcessing,
+  })
+
+  const id = getStepRunId(flowRun.uid, stepToRun.uid)
+  const ref = await fbCreate(
+    "stepRun",
+    {
+      flowKey: flowRun.flowKey,
+      flowRunKey: flowRun.uid,
+      stepKey: stepToRun.uid,
+      state: {
+        directFunctionRunCompletedAt: null,
+        dataCollectionCompletedAt: null,
+        promptCompletedAt: null,
+        outputVariableSavingCompletedAt: null,
+        finalResponseCompletedAt: null,
+        stepCompletedAt: null,
+      },
+      variableValues: {},
+    },
+    { id }
+  )
+  return ref.data
+}
+
+export const processFlowRun = async (flowRunKey: string, trigger: number) => {
+  await fbSet("flowRun", flowRunKey, {
+    triggeredAt: trigger,
+  })
+  const flowRun = await readDoc("flowRun", flowRunKey)
+
+  const [steps, stepRuns, flow] = await Promise.all([
+    queryDocs("step", (q) => {
+      return q
+        .where("flowKey", "==", flowRun.flowKey)
+        .where("archived", "==", false)
+        .orderBy("index", "asc")
+    }),
+    await queryDocs("stepRun", (q) => {
+      return q.where("flowRunKey", "==", flowRunKey)
+    }),
+    readDoc("flow", flowRun.flowKey),
+  ])
+
+  const {
+    currentSteps: curSteps,
+    currentStepIndex,
+    currentStepRuns,
+    curStepIds,
+  } = getCurrentStepRuns(steps, stepRuns)
+
+  const completedSteps = steps.slice(0, currentStepIndex)
+
+  console.log(
+    "running flow run processing",
+    flowRunKey,
+    flowRun.flowKey,
+    curStepIds
+  )
+
+  if (!curSteps.length) {
+    await fbSet("flowRun", flowRunKey, {
+      completedAt: Timestamp.now(),
+    })
+    return false
+  }
+
+  const getFlowMesssages = () =>
+    queryDocs("flowMessage", (q) => {
+      return q
+        .where("flowRunKey", "==", flowRunKey)
+        .where("archived", "==", false)
+        .orderBy("createdAt", "desc")
     })
 
-    const id = getStepRunId(flowRunKey, firstStepToRun.uid)
-    const ref = await fbCreate(
-      "stepRun",
-      {
-        flowKey: flowRun.flowKey,
-        flowRunKey,
-        stepKey: firstStepToRun.uid,
-        state: {
-          directFunctionRunCompletedAt: null,
-          dataCollectionCompletedAt: null,
-          promptCompletedAt: null,
-          outputVariableSavingCompletedAt: null,
-          finalResponseCompletedAt: null,
-          stepCompletedAt: null,
-        },
-        variableValues: {},
-      },
-      { id }
-    )
+  const flowMessagesBeforeStep = await getFlowMesssages()
 
-    currentStepRuns.push(ref.data)
+  if (!flowMessagesBeforeStep.length) {
+    await createIntroFlowMessage(flow, flowRunKey)
+    await createUserFacingIntro(flow, flowRunKey)
   }
 
   // todo Add UI lock here
@@ -165,11 +206,37 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
     allowInput: false,
   })
 
-  await Promise.all(
+  for (const step of curSteps) {
+    const currStepRun = currentStepRuns.find((_) => _.stepKey === step.uid)
+
+    if (!currStepRun) {
+      console.log("creating setp run start for", step.index, step.uid)
+      const stepRun = await createStepStartSystemMessageAndStepRun(
+        step,
+        currentStepRuns,
+        stepRuns,
+        completedSteps,
+        steps,
+        flow,
+        flowRun
+      )
+      currentStepRuns.push(stepRun)
+    }
+  }
+
+  const shouldReRuns = await Promise.all(
     curSteps.map(async (step) => {
-      const currStepRun = currentStepRuns.find((_) => _.stepKey === step.uid)
+      const currentStepRun = currentStepRuns.find((_) => _.stepKey === step.uid)
       let nReRuns = 0
       const runStep = async () => {
+        const allVariablesAvailable = await getAllVariablesWithGlobals(
+          currentStepRuns,
+          stepRuns,
+          completedSteps,
+          flow,
+          flowRun
+        )
+
         if (nReRuns > reRunsAllowed) {
           return false
         }
@@ -179,27 +246,16 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
           return false
         }
 
-        const firstStepRun = currentStepRuns[0]
+        currentStepRun
 
-        const unprocessedMessages = await queryDocs("flowMessage", (q) => {
-          return q
-            .where("flowRunKey", "==", flowRunKey)
-            .where("archived", "==", false)
-            .orderBy("createdAt", "desc")
-        })
-
-        const messages = unprocessedMessages.length
-          ? unprocessedMessages.reverse()
-          : [
-              (await createIntroFlowMessage(flow, flowRunKey)).data,
-              (await createUserFacingIntro(flow, flowRunKey)).data,
-            ].filter(Boolean)
+        const messages = await getFlowMesssages()
+        messages.reverse()
 
         const updatedMessagesWithStepKeyInfo = await Promise.all(
           messages.map(async (message) => {
             if (!message.processedForStep) {
-              message.processedForStepRunKey = firstStepRun!.uid
-              message.processedForStep = firstStepToRun.uid
+              message.processedForStepRunKey = currentStepRun!.uid
+              message.processedForStep = currentStepRun!.uid
 
               await fbSet("flowMessage", message.uid, message)
             }
@@ -212,11 +268,13 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
           step
         )
 
+        const upToDateStepRun = await readDoc("stepRun", currentStepRun!.uid)
+
         return await processStepRun({
           messages: messagesForGPT,
           currentStep: step,
-          currentStepRun: currStepRun!,
-          allVariablesFromPreviousSteps: allVariablesWithGlobals,
+          currentStepRun: upToDateStepRun!,
+          allVariablesFromPreviousSteps: allVariablesAvailable,
           triggeredTime: trigger,
         })
       }
@@ -225,7 +283,11 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
 
       console.log("re-running?", shouldReRun, flowRunKey, step.uid)
       if (shouldReRun) {
-        runStep()
+        return runStep()
+      } else if (shouldReRun === false) {
+        return false
+      } else if (shouldReRun === null) {
+        return true
       }
     })
   )
@@ -233,7 +295,9 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
     allowInput: true,
   })
 
-  return false
+  const shouldReRun = shouldReRuns.some((_) => _ === true)
+
+  return shouldReRun
 }
 
 export const processFlowRunWithErrorHandling = async (

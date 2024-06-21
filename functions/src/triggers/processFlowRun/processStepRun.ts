@@ -21,6 +21,7 @@ import { deepMapObj } from "@/lib/helpers/deepMapObj"
 import { replaceTemplate } from "./replaceTemplate"
 import { checkForFlowRunCancelled } from "./processFlowRun"
 import { SenderType } from "@/models/types/FlowMessage"
+import { ConnectWithoutContactOutlined } from "@mui/icons-material"
 
 export type StepProcessingToolBuilder<ToolParams extends object> = (
   params: ProcessStepParams
@@ -68,10 +69,6 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
 
   await sendPreExecutionMessage(params)
 
-  console.log(
-    "params.currentStep.functionInformation?.name!",
-    JSON.stringify(params.currentStep.functionInformation, null, 2)
-  )
   const functionBuilder =
     availableToolGetters[params.currentStep.functionInformation?.name!]
 
@@ -140,7 +137,6 @@ const directlyRunFunction = async (params: ProcessStepParams) => {
       directFunctionRunCompletedAt: Timestamp.now(),
       outputVariableSavingCompletedAt: Timestamp.now(),
       promptCompletedAt: Timestamp.now(),
-      stepCompletedAt: Timestamp.now(),
     },
   })
 
@@ -180,5 +176,7 @@ const runStepRunStateProcessor = async (
 
 export const processStepRun = async (params: ProcessStepParams) => {
   const currentStepRunState = getNextStepRunState(params.currentStepRun.state)!
-  return runStepRunStateProcessor(currentStepRunState, params)
+  return currentStepRunState
+    ? runStepRunStateProcessor(currentStepRunState, params)
+    : null
 }

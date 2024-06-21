@@ -1,6 +1,6 @@
-import { Flow } from "@/models/types/Flow";
-import { SenderType } from "@/models/types/FlowMessage";
-import { fbCreate } from "../../helpers/fbWriters";
+import { Flow } from "@/models/types/Flow"
+import { SenderType } from "@/models/types/FlowMessage"
+import { fbCreate } from "../../helpers/fbWriters"
 
 export const createIntroFlowMessage = async (
   flow: Flow,
@@ -19,9 +19,9 @@ You can reply in markdown.`,
     processedForStepRunKey: null,
     flowRunKey: flowRunKey,
     isFlowIntro: true,
-  });
-  return res;
-};
+  })
+  return res
+}
 
 export const createUserFacingIntro = async (flow: Flow, flowRunKey: string) => {
   const res = await fbCreate("flowMessage", {
@@ -31,6 +31,6 @@ export const createUserFacingIntro = async (flow: Flow, flowRunKey: string) => {
     processedForStep: null,
     processedForStepRunKey: null,
     flowRunKey: flowRunKey,
-  });
-  return res;
-};
+  })
+  return res
+}

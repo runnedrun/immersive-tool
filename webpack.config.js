@@ -1,10 +1,11 @@
-const path = require("path");
-const nodeExternals = require("webpack-node-externals");
+const path = require("path")
+const nodeExternals = require("webpack-node-externals")
 
-console.log("mode", process.env.WEBPACK_MODE);
+console.log("mode", process.env.WEBPACK_MODE)
 module.exports = {
   mode: process.env.WEBPACK_MODE || "development",
   entry: "./functions/src/index",
+  devtool: "source-map",
   target: "node",
   context: path.resolve(__dirname),
   module: {
@@ -108,4 +109,4 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     libraryTarget: "this", // <-- Important
   },
-};
+}
