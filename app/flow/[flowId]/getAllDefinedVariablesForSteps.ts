@@ -9,7 +9,7 @@ export const getAllDefinedVariablesForSteps = (steps: Step[], flow: Flow) => {
         ?.responseVariableName
         ? {
             [step.functionInformation?.responseVariableName]: {
-              createdAt: Timestamp.now(),
+              createdAt: Timestamp.fromMillis(0),
               description: "direct fn resp variable",
             } as VariableData,
           }

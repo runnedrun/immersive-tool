@@ -74,6 +74,10 @@ export const sendPreExecutionMessage = async (params: ProcessStepParams) => {
 }
 
 export const runPromptStep: StepRunProcessor = async (params) => {
+  if (params.currentStep.isDirectFunctionCall) {
+    return true
+  }
+
   if (params.currentStep.preExecutionMessage) {
     sendPreExecutionMessage(params)
   }
