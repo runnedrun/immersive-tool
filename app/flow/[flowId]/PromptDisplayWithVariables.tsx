@@ -1,5 +1,6 @@
 "use client"
-import { EditorContent, Extension, useEditor } from "@tiptap/react"
+import { Editor, EditorContent, Extension, useEditor } from "@tiptap/react"
+
 import { VariableData } from "@/models/types/Step"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
@@ -8,7 +9,7 @@ import {
   VariableHighlightExtensionName,
 } from "./VariableHighlightExtension"
 import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted"
-import { useEffect } from "react"
+import { memo, useEffect } from "react"
 import { isServerside } from "@/lib/isServerSide"
 import { TextField } from "@mui/material"
 
@@ -39,6 +40,14 @@ function domFromText(text: string): string {
   })
   return dom.outerHTML
 }
+
+const EditorDisplay = memo(({ editor }: { editor: Editor | null }) => {
+  return (
+    <div className="h-full overflow-auto bg-white p-2 text-sm">
+      <EditorContent editor={editor}></EditorContent>
+    </div>
+  )
+})
 
 export const PromptDisplayWithVariables = ({
   variables,
@@ -76,9 +85,5 @@ export const PromptDisplayWithVariables = ({
     }
   }, [variableNames, editor])
 
-  return (
-    <div className="h-full overflow-auto bg-white p-2 text-sm">
-      <EditorContent editor={editor}></EditorContent>
-    </div>
-  )
+  return <EditorDisplay editor={editor}></EditorDisplay>
 }

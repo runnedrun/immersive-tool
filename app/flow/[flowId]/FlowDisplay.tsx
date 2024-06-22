@@ -252,7 +252,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <Label>Title</Label>
                     <Input
                       className={"border-none"}
-                      value={flow!.title || ""}
+                      defaultValue={flow!.title || ""}
                       onChange={(e) => {
                         fbSet("flow", flow!.uid, { title: e.target.value })
                       }}
@@ -273,7 +273,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     </Label>
                     <Input
                       className={"border-none"}
-                      value={flow!.aiName || ""}
+                      defaultValue={flow!.aiName || ""}
                       placeholder="AI Helper"
                       onChange={(e) => {
                         fbSet("flow", flow!.uid, { aiName: e.target.value })
@@ -286,7 +286,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <Label>Description</Label>
                     <Input
                       className={"border-none"}
-                      value={flow!.description || ""}
+                      defaultValue={flow!.description || ""}
                       onChange={(e) => {
                         fbSet("flow", flow!.uid, {
                           description: e.target.value,
@@ -300,7 +300,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
                     <Label>Introduction Message</Label>
                     <Input
                       className={"border-none"}
-                      value={flow!.introductionMessage || ""}
+                      defaultValue={flow!.introductionMessage || ""}
                       onChange={(e) => {
                         fbSet("flow", flow!.uid, {
                           introductionMessage: e.target.value,

@@ -1,30 +1,14 @@
 "use client"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { fbSet } from "@/firebase/settersFe"
-import { Field, Label } from "@/components/ui/fieldset"
-import { Step, VariableData } from "@/models/types/Step"
-import { StepTemplateDisplay } from "./StepTemplateDisplay"
 import { Button } from "@/components/ui/button"
-import { PlusIcon, TrashIcon } from "@heroicons/react/16/solid"
-import { isEmpty, sortBy } from "lodash"
-import { Timestamp } from "@firebase/firestore"
-import { ResponseDescriptionTemplateDisplay } from "./ResponseDescriptionTemplateDisplay"
-import { VariableDisplay } from "./VariableDisplay"
-import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay"
-import { PreExecutionMessageDisplay } from "./PreExecutionMessageDisplay"
-import { useCallback, useMemo } from "react"
-import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted"
-import { objKeys } from "@/lib/helpers/objKeys"
+import { Field, Label } from "@/components/ui/fieldset"
+import { Input } from "@/components/ui/input"
+import { fbSet } from "@/firebase/settersFe"
 import { availableToolSpecsByName } from "@/functions/src/triggers/processFlowRun/tools/availableTools"
-import {
-  Autocomplete,
-  InputLabel,
-  Switch,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material"
+import { objKeys } from "@/lib/helpers/objKeys"
+import { Step, VariableData } from "@/models/types/Step"
+import { Timestamp } from "@firebase/firestore"
+import { PlusIcon, TrashIcon } from "@heroicons/react/16/solid"
+import { Autocomplete, Switch, TextField } from "@mui/material"
 import { Form } from "@rjsf/mui"
 import {
   RJSFSchema,
@@ -33,7 +17,35 @@ import {
   WidgetProps,
 } from "@rjsf/utils"
 import validator from "@rjsf/validator-ajv8"
+import { isEmpty } from "lodash"
+import { createContext, useCallback, useContext } from "react"
+import { PreExecutionMessageDisplay } from "./PreExecutionMessageDisplay"
 import { PromptDisplayWithVariables } from "./PromptDisplayWithVariables"
+import { ResponseDescriptionTemplateDisplay } from "./ResponseDescriptionTemplateDisplay"
+import { StepTemplateDisplay } from "./StepTemplateDisplay"
+import { VariableCollectionDescriptionDisplay } from "./VariableCollectionDescriptionDisplay"
+import { VariableDisplay } from "./VariableDisplay"
+
+const AllVariablesContext = createContext({
+  allVariables: {} as Record<string, VariableData>,
+})
+
+const CustomTextWidget = (props: WidgetProps) => {
+  const { allVariables } = useContext(AllVariablesContext)
+  return (
+    <div className="flex flex-col gap-2">
+      <div>{props.name}</div>
+      <PromptDisplayWithVariables
+        variables={allVariables}
+        template={props.value || ""}
+        placeholder="e.g. Send an email to {{email}} with the subject {{subject}}."
+        onChange={(text) => {
+          props.onChange(text)
+        }}
+      ></PromptDisplayWithVariables>
+    </div>
+  )
+}
 
 export const StepDisplay = ({
   step,
@@ -146,27 +158,8 @@ export const StepDisplay = ({
     ...step.variableDescriptions,
   }
 
-  const CustomFormTextWidget = useMemo(() => {
-    const TempWidget = (props: WidgetProps) => {
-      return (
-        <div className="flex flex-col gap-2">
-          <div>{props.name}</div>
-          <PromptDisplayWithVariables
-            variables={allVariables}
-            template={props.value || ""}
-            placeholder="e.g. Send an email to {{email}} with the subject {{subject}}."
-            onChange={(text) => {
-              props.onChange(text)
-            }}
-          ></PromptDisplayWithVariables>
-        </div>
-      )
-    }
-    return TempWidget
-  }, [JSON.stringify(allVariables)])
-
   const widgets: RegistryWidgetsType = {
-    TextWidget: CustomFormTextWidget,
+    TextWidget: CustomTextWidget,
   }
 
   let mainExecutionDisplay = null
@@ -202,21 +195,23 @@ export const StepDisplay = ({
           <div>
             <div>Arguments:</div>
             <div>
-              <Form
-                widgets={widgets}
-                uiSchema={formUISchema}
-                className="mb-4"
-                schema={functionSpec.parameters as RJSFSchema}
-                validator={validator}
-                formData={step.functionInformation?.args || {}}
-                onChange={(a) => {
-                  fbSet("step", step.uid, {
-                    functionInformation: {
-                      args: a.formData,
-                    },
-                  })
-                }}
-              />
+              <AllVariablesContext.Provider value={{ allVariables }}>
+                <Form
+                  widgets={widgets}
+                  uiSchema={formUISchema}
+                  className="mb-4"
+                  schema={functionSpec.parameters as RJSFSchema}
+                  validator={validator}
+                  formData={step.functionInformation?.args || {}}
+                  onChange={(a) => {
+                    fbSet("step", step.uid, {
+                      functionInformation: {
+                        args: a.formData,
+                      },
+                    })
+                  }}
+                />
+              </AllVariablesContext.Provider>
             </div>
           </div>
         )}
@@ -260,7 +255,7 @@ export const StepDisplay = ({
           <div className="flex items-center gap-2">
             <Input
               className={"border-none"}
-              value={step.title || ""}
+              defaultValue={step.title || ""}
               onChange={(e) => {
                 fbSet("step", step.uid, { title: e.target.value })
               }}
