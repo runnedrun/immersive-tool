@@ -141,6 +141,34 @@ export const StepDisplay = ({
     </div>
   )
 
+  const allVariables = {
+    ...variablesFromPreviousSteps,
+    ...step.variableDescriptions,
+  }
+
+  const CustomFormTextWidget = useMemo(() => {
+    const TempWidget = (props: WidgetProps) => {
+      return (
+        <div className="flex flex-col gap-2">
+          <div>{props.name}</div>
+          <PromptDisplayWithVariables
+            variables={allVariables}
+            template={props.value || ""}
+            placeholder="e.g. Send an email to {{email}} with the subject {{subject}}."
+            onChange={(text) => {
+              props.onChange(text)
+            }}
+          ></PromptDisplayWithVariables>
+        </div>
+      )
+    }
+    return TempWidget
+  }, [JSON.stringify(allVariables)])
+
+  const widgets: RegistryWidgetsType = {
+    TextWidget: CustomFormTextWidget,
+  }
+
   let mainExecutionDisplay = null
   if (step.isDirectFunctionCall) {
     const functionNames = objKeys(availableToolSpecsByName)
@@ -152,34 +180,6 @@ export const StepDisplay = ({
       "ui:submitButtonOptions": {
         norender: true,
       },
-    }
-
-    const allVariables = {
-      ...variablesFromPreviousSteps,
-      ...step.variableDescriptions,
-    }
-
-    const CustomFormTextWidget = useMemo(
-      () => (props: WidgetProps) => {
-        return (
-          <div className="flex flex-col gap-2">
-            <div>{props.name}</div>
-            <PromptDisplayWithVariables
-              variables={allVariables}
-              template={props.value || ""}
-              placeholder="e.g. Send an email to {{email}} with the subject {{subject}}."
-              onChange={(text) => {
-                props.onChange(text)
-              }}
-            ></PromptDisplayWithVariables>
-          </div>
-        )
-      },
-      [JSON.stringify(allVariables)]
-    )
-
-    const widgets: RegistryWidgetsType = {
-      TextWidget: CustomFormTextWidget,
     }
 
     mainExecutionDisplay = (
