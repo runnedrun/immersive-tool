@@ -28,6 +28,7 @@ export const checkForFlowRunCancelled = async (
 ) => {
   const flowRun = await readDoc("flowRun", flowRunKey)
   if ((flowRun.cancelledAt || 0) > originalTriggerTime) {
+    console.log("flow cancelled", flowRunKey)
     return true
   }
   return false
@@ -114,7 +115,7 @@ const createStepStartSystemMessageAndStepRun = async (
       flow,
       flowRun
     )
-  await createSystemMessageForStepStart({
+  const stepMessage = await createSystemMessageForStepStart({
     allSteps,
     completedSteps,
     flowRun,
@@ -141,7 +142,7 @@ const createStepStartSystemMessageAndStepRun = async (
     },
     { id }
   )
-  return ref.data
+  return { stepRun: ref.data, stepMessage: stepMessage }
 }
 
 export const processFlowRun = async (flowRunKey: string, trigger: number) => {
@@ -197,38 +198,56 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
   const flowMessagesBeforeStep = await getFlowMesssages()
 
   if (!flowMessagesBeforeStep.length) {
-    await createIntroFlowMessage(flow, flowRunKey)
-    await createUserFacingIntro(flow, flowRunKey)
+    const newMessages = [
+      (await createIntroFlowMessage(flow, flowRunKey)).data,
+      (await createUserFacingIntro(flow, flowRunKey)).data,
+    ]
+    flowMessagesBeforeStep.push(...newMessages)
   }
-
-  // todo Add UI lock here
-  await fbSet("flowRun", flowRunKey, {
-    allowInput: false,
-  })
 
   for (const step of curSteps) {
     const currStepRun = currentStepRuns.find((_) => _.stepKey === step.uid)
 
     if (!currStepRun) {
       console.log("creating setp run start for", step.index, step.uid)
-      const stepRun = await createStepStartSystemMessageAndStepRun(
-        step,
-        currentStepRuns,
-        stepRuns,
-        completedSteps,
-        steps,
-        flow,
-        flowRun
-      )
+      const { stepRun, stepMessage } =
+        await createStepStartSystemMessageAndStepRun(
+          step,
+          currentStepRuns,
+          stepRuns,
+          completedSteps,
+          steps,
+          flow,
+          flowRun
+        )
       currentStepRuns.push(stepRun)
+      flowMessagesBeforeStep.push(stepMessage)
     }
   }
+
+  const firstStepRun = currentStepRuns[0]
+
+  await Promise.all(
+    flowMessagesBeforeStep.map(async (message) => {
+      if (!message.processedForStep) {
+        message.processedForStepRunKey = firstStepRun!.uid
+        message.processedForStep = firstStepRun!.stepKey
+
+        await fbSet("flowMessage", message.uid, message)
+      }
+      return message
+    })
+  )
+
+  await fbSet("flowRun", flowRunKey, {
+    allowInput: false,
+  })
 
   const shouldReRuns = await Promise.all(
     curSteps.map(async (step) => {
       const currentStepRun = currentStepRuns.find((_) => _.stepKey === step.uid)
       let nReRuns = 0
-      const runStep = async () => {
+      const runStep = async (): Promise<boolean> => {
         const allVariablesAvailable = await getAllVariablesWithGlobals(
           currentStepRuns,
           stepRuns,
@@ -238,6 +257,7 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
         )
 
         if (nReRuns > reRunsAllowed) {
+          console.log("max step re-runs exceeded", step.uid)
           return false
         }
         nReRuns++
@@ -246,49 +266,38 @@ export const processFlowRun = async (flowRunKey: string, trigger: number) => {
           return false
         }
 
-        currentStepRun
-
         const messages = await getFlowMesssages()
+
         messages.reverse()
 
-        const updatedMessagesWithStepKeyInfo = await Promise.all(
-          messages.map(async (message) => {
-            if (!message.processedForStep) {
-              message.processedForStepRunKey = currentStepRun!.uid
-              message.processedForStep = currentStepRun!.uid
-
-              await fbSet("flowMessage", message.uid, message)
-            }
-            return message
-          })
-        )
-
-        const messagesForGPT = getMessagesForAi(
-          updatedMessagesWithStepKeyInfo,
-          step
-        )
+        const messagesForGPT = getMessagesForAi(messages, step)
 
         const upToDateStepRun = await readDoc("stepRun", currentStepRun!.uid)
+        console.log("running step run again", currentStepRun!.uid)
 
-        return await processStepRun({
+        const shouldReRun = await processStepRun({
           messages: messagesForGPT,
           currentStep: step,
           currentStepRun: upToDateStepRun!,
           allVariablesFromPreviousSteps: allVariablesAvailable,
           triggeredTime: trigger,
         })
+
+        console.log("should re run step?", step.uid, shouldReRun)
+
+        if (shouldReRun) {
+          return runStep()
+        } else if (shouldReRun === false) {
+          return false
+        } else {
+          return true
+        }
       }
 
       const shouldReRun = await runStep()
 
-      console.log("re-running?", shouldReRun, flowRunKey, step.uid)
-      if (shouldReRun) {
-        return runStep()
-      } else if (shouldReRun === false) {
-        return false
-      } else if (shouldReRun === null) {
-        return true
-      }
+      console.log("re-triggering whole function", shouldReRun, step.uid)
+      return shouldReRun
     })
   )
   await fbSet("flowRun", flowRunKey, {

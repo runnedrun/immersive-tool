@@ -55,7 +55,8 @@ ${requiredInfoMsg}.`
   }. The next step is step #${
     completedSteps.length + 1
   }.${stepTitleMessage}${variablesToCollectMessage}
-    After each variable is collected, please immediately save the variable before collecting the next one.
+    If the user provides information that does not meet the requirements for the variable being collected, you may prompt them again, until they give an appropriate answer.
+    As soon as the appropriate information for each variable is collected, please immediately save the variable before collecting the next one.
     ${aiIntroString}${startPrompt}`,
     senderType: SenderType.StepIntroducion,
     flowKey: step.flowKey,

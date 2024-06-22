@@ -147,7 +147,7 @@ const DebugMessageGroupDisplay = withData(
           })
         }
       }
-    }, [isLatestStep, messageGroup.length, stepRunDisplayReady, isPendingStep])
+    }, [isLatestStep])
 
     return (
       <div

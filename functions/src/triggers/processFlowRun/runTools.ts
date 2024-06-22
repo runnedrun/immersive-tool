@@ -1,17 +1,14 @@
 import { SenderType } from "@/models/types/FlowMessage"
+import { takeWhile } from "lodash"
 import { ChatCompletionRunner } from "openai/lib/ChatCompletionRunner.mjs"
 import {
   RunnableFunction,
   RunnableToolFunction,
 } from "openai/lib/RunnableFunction.mjs"
-import {
-  ChatCompletionMessage,
-  ChatCompletionMessageParam,
-} from "openai/resources/index.mjs"
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs"
 import { getOpenAIClient } from "../../ai/getOpenAIClient"
 import { fbCreate } from "../../helpers/fbWriters"
 import { ProcessStepParams } from "./processStepRun"
-import { reverse, takeWhile } from "lodash"
 
 const tokenLimit = 1000
 const truncateMessages = (messages: ChatCompletionMessageParam[]) => {
