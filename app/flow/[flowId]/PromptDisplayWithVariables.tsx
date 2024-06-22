@@ -41,7 +41,11 @@ function domFromText(text: string): string {
   return dom.outerHTML
 }
 
-const EditorDisplay = memo(({ editor }: { editor: Editor | null }) => {
+const EditorDisplay = memo(function EditorDisplayTemp({
+  editor,
+}: {
+  editor: Editor | null
+}) {
   return (
     <div className="h-full overflow-auto bg-white p-2 text-sm">
       <EditorContent editor={editor}></EditorContent>
