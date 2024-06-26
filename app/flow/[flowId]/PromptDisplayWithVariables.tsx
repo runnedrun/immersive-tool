@@ -1,17 +1,16 @@
 "use client"
 import { Editor, EditorContent, Extension, useEditor } from "@tiptap/react"
 
+import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted"
+import { isServerside } from "@/lib/isServerSide"
 import { VariableData } from "@/models/types/Step"
-import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
+import StarterKit from "@tiptap/starter-kit"
+import { memo, useEffect } from "react"
 import {
   VariableHighlightExtension,
   VariableHighlightExtensionName,
 } from "./VariableHighlightExtension"
-import { getVariableNamesSorted } from "@/functions/src/triggers/processFlowRun/getVariableNamesSorted"
-import { memo, useEffect } from "react"
-import { isServerside } from "@/lib/isServerSide"
-import { TextField } from "@mui/material"
 
 const getExtensions = (placeholder?: string) =>
   [
