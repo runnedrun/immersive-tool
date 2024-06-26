@@ -44,7 +44,6 @@ export const GlobalVariableDisplay = ({ flow }: { flow: Flow }) => {
       <VariableDisplay
         variableNamesAndValues={flow.globalVariables || {}}
         renderVariableValue={(variableName, value) => {
-          console.log("Redneing with name", variableName)
           const variableTypeDropdown = (
             <Autocomplete
               className="w-32"

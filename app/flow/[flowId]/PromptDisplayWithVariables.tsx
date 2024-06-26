@@ -64,7 +64,9 @@ export const PromptDisplayWithVariables = ({
   onChange: (newText: string) => void
   placeholder?: string
 }) => {
-  const templateString = isServerside() ? template : domFromText(template || "")
+  const templateString = isServerside()
+    ? template
+    : domFromText(String(template || ""))
   const editor = useEditor(
     {
       extensions: getExtensions(placeholder),
@@ -87,7 +89,7 @@ export const PromptDisplayWithVariables = ({
         )
       )
     }
-  }, [variableNames, editor])
+  }, [JSON.stringify(variableNames), editor])
 
   return <EditorDisplay editor={editor}></EditorDisplay>
 }
