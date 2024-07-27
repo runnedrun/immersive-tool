@@ -299,6 +299,7 @@ export const DebugMessagesDisplay = ({
 
                 await fbSet("flowRun", flowRun.uid, {
                   cancelledAt: newCancelledAtMs,
+                  errorMessage: null,
                 })
 
                 await resetFlowRunToStepRunStart(

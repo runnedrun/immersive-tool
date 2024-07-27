@@ -51,14 +51,14 @@ export const buildSaveVariableFn: StepProcessingToolBuilder<
     }
     await fbSet("stepRun", currentStepRun.uid, {
       variableValues: {
-        [params.variableName]: params.value,
+        [params.variableName]: params.value || "",
       },
     })
 
     const allVariables = {
       ...currentStepRun.variableValues,
       ...allVariablesFromPreviousSteps,
-      [params.variableName]: params.value,
+      [params.variableName]: params.value || "",
     }
 
     const allSavedVariableNames = Object.keys(allVariables)
@@ -79,7 +79,9 @@ export const buildSaveVariableFn: StepProcessingToolBuilder<
     description: ${currentStep.variableDescriptions?.[nextVariableToCollect].description}`
       return returnMessage
     } else {
-      runner.abort()
+      setTimeout(() => {
+        runner.abort()
+      })
       return "All variables have been collected"
     }
   }

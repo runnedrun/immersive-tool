@@ -1,7 +1,6 @@
 import { Extension } from "@tiptap/core"
 import { Decoration, DecorationSet } from "prosemirror-view"
-import { Plugin, TextSelection } from "prosemirror-state"
-import { Observable } from "rxjs"
+import { Plugin } from "prosemirror-state"
 import { PluginKey } from "@tiptap/pm/state"
 
 export const VariableHighlightExtensionName = "variableHighlight"

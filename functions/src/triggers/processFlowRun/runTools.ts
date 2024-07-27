@@ -97,6 +97,7 @@ const bindRunnerToMessageCreation = async (
       throw e
     }
   })
+  console.log("runner done")
   await Promise.all(promisesToWaitFor)
 
   return !runner.aborted
