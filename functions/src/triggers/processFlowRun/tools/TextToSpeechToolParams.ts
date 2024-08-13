@@ -1,9 +1,9 @@
-import { buildBaseSpec } from "./ToolTypes";
+import { buildBaseSpec } from "./ToolTypes"
 
 export type TextToSpeechToolParams = {
-  text: string;
-  voice: string;
-};
+  text: string
+  voice: string
+}
 
 export const textToSpeechFnBaseSpec = buildBaseSpec<TextToSpeechToolParams>()({
   parameters: {
@@ -23,5 +23,5 @@ export const textToSpeechFnBaseSpec = buildBaseSpec<TextToSpeechToolParams>()({
   },
   name: "textToSpeech",
   description:
-    "Get a link to an MP3 file of the text spoken by the voice specified",
-} as const);
+    "Get a link to an MP3 file of the text spoken by the voice specified. Only run this if the user specifically requests it.",
+} as const)

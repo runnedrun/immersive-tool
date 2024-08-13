@@ -48,6 +48,13 @@ ${requiredInfoMsg}.`
     ${variarblesToCollect[0]}`
     : ``
 
+  const variableCollectionRules = variarblesToCollect.length
+    ? `If the user provides information that does not meet the requirements for the variable being collected, you may prompt them again, until they give an appropriate answer.
+    As soon as the appropriate information for each variable is collected, please immediately save the variable before collecting the next one.`
+    : ""
+
+  const onlyCallFunctionsExplicitly = `You may only call the included functions when explicitly requested by the user.`
+
   const res = await fbCreate("flowMessage", {
     text: `
   You have completed ${completedSteps.length} steps out of ${
@@ -55,9 +62,9 @@ ${requiredInfoMsg}.`
   }. The next step is step #${
     completedSteps.length + 1
   }.${stepTitleMessage}${variablesToCollectMessage}
-    If the user provides information that does not meet the requirements for the variable being collected, you may prompt them again, until they give an appropriate answer.
-    As soon as the appropriate information for each variable is collected, please immediately save the variable before collecting the next one.
-    ${aiIntroString}${startPrompt}`,
+    ${variableCollectionRules}    
+    ${aiIntroString}${startPrompt}
+    ${onlyCallFunctionsExplicitly}`,
     senderType: SenderType.StepIntroducion,
     flowKey: step.flowKey,
     processedForStep: step.uid,

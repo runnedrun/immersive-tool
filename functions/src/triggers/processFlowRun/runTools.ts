@@ -148,7 +148,7 @@ export const runCompletionWithoutTools = async (
   )
   const client = getOpenAIClient()
   const completion = await client.chat.completions.create({
-    model: "gpt-3.5-turbo",
+    model: "gpt-4-turbo",
     messages: truncateMessages(params.messages),
   })
   const message = completion.choices[0].message

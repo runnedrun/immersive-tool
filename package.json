@@ -12,8 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "emulate": "firebase emulators:start --project demo",
-    "build-functions": "WEBPACK_MODE='production' webpack",
-    "gcp-build": "node node_modules/puppeteer/install.mjs"
+    "build-functions": "WEBPACK_MODE='production' webpack"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
@@ -61,7 +60,6 @@
     "prettier": "^3.3.2",
     "prettier-plugin-tailwindcss": "^0.6.4",
     "prop-types": "^15.8.1",
-    "puppeteer": "^20.9.0",
     "react": "^18",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18",

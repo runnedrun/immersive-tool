@@ -1,6 +1,6 @@
-import { ReplaceAudioArgs } from "../../audio/insertAudioAtTimestamp";
-import { OverlayBackgroundAudioArgs } from "../../audio/overlayBackgroundAudio";
-import { buildBaseSpec } from "./ToolTypes";
+import { ReplaceAudioArgs } from "../../audio/insertAudioAtTimestamp"
+import { OverlayBackgroundAudioArgs } from "../../audio/overlayBackgroundAudio"
+import { buildBaseSpec } from "./ToolTypes"
 
 export const overlayBackgroundAudioBaseSpec =
   buildBaseSpec<OverlayBackgroundAudioArgs>()({
@@ -22,4 +22,4 @@ export const overlayBackgroundAudioBaseSpec =
       },
       required: ["originalFileLink", "linkToFileToOverlay"],
     },
-  } as const);
+  } as const)
