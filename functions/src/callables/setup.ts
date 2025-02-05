@@ -2,7 +2,8 @@ import { onCall } from "firebase-functions/v2/https"
 import { fbCreate } from "../helpers/fbWriters"
 import { Timestamp } from "firebase-admin/firestore"
 
-const createBigFlow = async () => {
+const createBigFlow = async (idOverride?: string) => {
+  const flowId = idOverride || "1"
   const ref = await fbCreate(
     "flow",
     {
@@ -13,7 +14,7 @@ const createBigFlow = async () => {
       aiName: "AI Host",
       runIdentifier: `{{name}}-{{email}}`,
     },
-    { id: "1", merge: false }
+    { id: flowId, merge: false }
   )
 
   await fbCreate(
@@ -67,7 +68,7 @@ const createBigFlow = async () => {
       },
     },
     {
-      id: "step1",
+      id: `step-${flowId}-0`,
       merge: false,
     }
   )
@@ -102,7 +103,7 @@ const createBigFlow = async () => {
       },
     },
     {
-      id: "step2",
+      id: `step-${flowId}-1`,
       merge: false,
     }
   )
@@ -129,7 +130,7 @@ const createBigFlow = async () => {
       },
     },
     {
-      id: "step3",
+      id: `step-${flowId}-2`,
       merge: false,
     }
   )
@@ -157,7 +158,7 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step4",
+      id: `step-${flowId}-3`,
       merge: false,
     }
   )
@@ -190,7 +191,7 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step5",
+      id: `step-${flowId}-4`,
       merge: false,
     }
   )
@@ -220,7 +221,7 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step6",
+      id: `step-${flowId}-5`,
       merge: false,
     }
   )
@@ -249,7 +250,7 @@ const createBigFlow = async () => {
       variableDescriptions: null,
     },
     {
-      id: "step7",
+      id: `step-${flowId}-6`,
       merge: false,
     }
   )
@@ -421,6 +422,15 @@ const createAudioFlow = async () => {
     }
   )
 }
+
+type SetupFlowRequest = {
+  flowId: string
+}
+export const setupBigFlow = onCall(async (e) => {
+  const { flowId } = e.data as SetupFlowRequest
+  console.log("setup", flowId)
+  return createBigFlow(flowId)
+})
 
 export const setup = onCall(async () => {
   console.log("setup")

@@ -165,7 +165,7 @@ export const FlowDisplay = withData(flowDataFn, ({ data: { flow, steps } }) => {
           >
             <MenuIcon />
           </IconButton>
-          <div>Immerse</div>
+          <div>Curtain Call</div>
         </Toolbar>
       </AppBar>
       <Drawer

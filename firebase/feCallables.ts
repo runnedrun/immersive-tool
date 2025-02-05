@@ -8,6 +8,7 @@ import { isDemoMode } from "./isDemoMode"
 import { isServerside } from "@/lib/isServerSide"
 import { jsonifyTimestamps } from "./jsonifyTimestamps"
 import { hydrateTimestamps } from "./hydrateTimestampsFe"
+import { SetupFlowRequest } from "@/functions/src/callables/setup"
 
 const buildCallableFunction = <ArgType, OutputType>(
   backendFunctionName: string,
@@ -34,3 +35,6 @@ const buildCallableFunction = <ArgType, OutputType>(
 }
 
 export const setup = buildCallableFunction<{}, any>("setup")
+export const setupBigFlow = buildCallableFunction<SetupFlowRequest, any>(
+  "setupBigFlow"
+)
